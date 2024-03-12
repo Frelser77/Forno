@@ -1,0 +1,34 @@
+﻿@model IEnumerable<Forno.Models.Product>
+
+@{
+    ViewBag.Title = "Index";
+}
+
+<h2>Index</h2>
+
+<p>
+    @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-primary" })
+</p>
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-4">
+            <div class="card mb-4 shadow-sm h-100">
+                <img class="card-img-top" src="@item.ImageUrl" alt="Product image">
+                <div class="card-body">
+                    <h5 class="card-title">@Html.DisplayFor(modelItem => item.Name)</h5>
+                    <p class="card-text">@Html.DisplayFor(modelItem => item.Price) €</p>
+                    <p class="card-text">Delivery time: @Html.DisplayFor(modelItem => item.DeliveryTime)</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="btn-group">
+                            @Html.ActionLink("Edit", "Edit", new { id = item.ProductID }, new { @class = "btn btn-sm btn-outline-secondary" })
+                            @Html.ActionLink("Details", "Details", new { id = item.ProductID }, new { @class = "btn btn-sm btn-outline-secondary" })
+                            @Html.ActionLink("Delete", "Delete", new { id = item.ProductID }, new { @class = "btn btn-sm btn-outline-danger" })
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,114 @@
+﻿@model Forno.Models.Orderr
+
+@{
+    ViewBag.Title = "Create";
+}
+
+<h2>Create</h2>
+
+
+@using (Html.BeginForm("Create", "Orderrs", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+{
+    @Html.AntiForgeryToken()
+
+    @Html.HiddenFor(model => model.Status, new { @Value = "In Preparazione" })
+
+    <div class="form-horizontal">
+        <h4>Order</h4>
+        <hr />
+        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+        <div class="form-group">
+            @Html.LabelFor(model => model.AppUserID, "AppUserID", htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.DropDownList("AppUserID", null, htmlAttributes: new { @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.AppUserID, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        <div class="form-group">
+            @Html.LabelFor(model => model.OrderDate, htmlAttributes: new { @class = "control-label col-md-2" })
+            <div class="col-md-10">
+                @Html.EditorFor(model => model.OrderDate, new { htmlAttributes = new { @class = "form-control", type = "date" } })
+                @Html.ValidationMessageFor(model => model.OrderDate, "", new { @class = "text-danger" })
+            </div>
+        </div>
+
+        @*<div class="form-group">
+                @Html.LabelFor(model => model.Status, htmlAttributes: new { @class = "control-label col-md-2" })
+                <div class="col-md-10">
+                    @Html.EditorFor(model => model.Status, new { htmlAttributes = new { @class = "form-control" } })
+                    @Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger" })
+                </div>
+            </div>*@
+
+        @Html.HiddenFor(model => model.TotalPrice, new { id = "hiddenTotalPrice" })
+
+        <div class="form-group">
+            <label class="control-label col-md-2">Products</label>
+            <div class="col-md-10">
+                @foreach (var product in (IEnumerable<Forno.Models.Product>)ViewBag.Products)
+                {
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="selectedProductIds" value="@product.ProductID" class="product-checkbox" />
+                            @Html.DisplayFor(modelItem => product.Name) -
+                            @Html.DisplayFor(modelItem => product.Price) €
+                        </label>
+                        <input type="number" name="quantities" value="1" min="1" class="product-quantity form-control" style="width: 60px; display: inline;" />
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-2">Total Price</label>
+            <div class="col-md-10">
+                <input type="text" name="TotalPrice" readonly class="form-control" id="totalPrice" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-offset-2 col-md-10">
+                <input type="submit" value="Create" class="btn btn-default" />
+            </div>
+        </div>
+    </div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript">
+   $(document).ready(function () {
+    var products = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.Products,
+        new Newtonsoft.Json.JsonSerializerSettings {
+            ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+    }));
+
+    // Funzione per calcolare il totale
+    function calculateTotal() {
+        var totalPrice = 0;
+        $('.product-checkbox:checked').each(function () {
+            var productId = parseInt($(this).val());
+            var quantity = parseInt($(this).closest('.checkbox').find('.product-quantity').val());
+            var product = products.find(p => p.ProductID === productId);
+            if (product && !isNaN(quantity)) {
+                totalPrice += product.Price * quantity;
+            }
+        });
+        $('#totalPrice').val(totalPrice.toFixed(2)); // Campo visibile
+        $('#hiddenTotalPrice').val(totalPrice.toFixed(2)); // Campo nascosto per il binding
+    }
+
+    // Eventi per ricacolare il totale quando si cambia la selezione o la quantità
+    $(document).on('change', '.product-checkbox, .product-quantity', calculateTotal);
+
+    // Calcolo iniziale del totale
+    calculateTotal();
+});
+
+    </script>
+}

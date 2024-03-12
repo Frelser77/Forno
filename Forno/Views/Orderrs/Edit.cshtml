@@ -1,0 +1,156 @@
+﻿@model Forno.Models.Orderr
+
+@{
+    ViewBag.Title = "Edit";
+}
+
+<h2>Edit</h2>
+
+
+@using (Html.BeginForm())
+{
+    @Html.AntiForgeryToken()
+
+<div class="form-horizontal">
+    <h4>Orderr</h4>
+    <hr />
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+    @Html.HiddenFor(model => model.OrderID)
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.AppUserID, "AppUserID", htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.DropDownList("AppUserID", (SelectList)ViewBag.AppUserID, htmlAttributes: new { @class = "form-control" })
+            @Html.ValidationMessageFor(model => model.AppUserID, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.OrderDate, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.OrderDate, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.OrderDate, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.Status, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.Status, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <div class="form-group">
+        @Html.LabelFor(model => model.TotalPrice, htmlAttributes: new { @class = "control-label col-md-2" })
+        <div class="col-md-10">
+            @Html.EditorFor(model => model.TotalPrice, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.ValidationMessageFor(model => model.TotalPrice, "", new { @class = "text-danger" })
+        </div>
+    </div>
+
+    <h3>Products</h3>
+    @{
+        var productToIngredientIdsMap = (Dictionary<int, int[]>)ViewBag.ProductToIngredientIdsMap;
+    }
+
+    @foreach (var product in (IEnumerable<SelectListItem>)ViewBag.AllProducts)
+    {
+        bool isProductSelected = Model.OrderDetail.Any(od => od.ProductID == int.Parse(product.Value));
+        <div>
+            <input type="checkbox" name="selectedProductIds" value="@product.Value"
+                   @(Model.OrderDetail.Any(od => od.Product.ProductID.ToString() == product.Value) ? "checked='checked'" : "") />
+            @product.Text
+        </div>
+        int[] ingredientIdsForProduct = ViewBag.ProductToIngredientIdsMap.ContainsKey(int.Parse(product.Value))
+                                   ? ViewBag.ProductToIngredientIdsMap[int.Parse(product.Value)]
+                                   : new int[] { };
+
+        <h3>Ingredients for @product.Text</h3>
+        foreach (var ingredient in (IEnumerable<Forno.Models.Ingredient>)ViewBag.AllIngredients)
+        {
+            bool isChecked = ingredientIdsForProduct.Contains(ingredient.IngredientID);
+
+            <div class="checkbox">
+                <label>
+                    <input type="checkbox" name="productIngredients[@product.Value]"
+                           value="@ingredient.IngredientID" @(isChecked ? "checked='checked'" : "") />
+                    @ingredient.Name
+                </label>
+            </div>
+        }
+    }
+
+    <div class="form-group">
+        <div class="col-md-offset-2 col-md-10">
+            <input type="submit" value="Save" class="btn btn-default" />
+        </div>
+    </div>
+</div>
+}
+
+<div>
+    @Html.ActionLink("Back to List", "Index")
+</div>
+
+@*
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+<script type="text/javascript">
+        $(document).ready(function () {
+            var selectedIngredientIDs = @Html.Raw(Json.Encode(ViewBag.SelectedIngredientIDs));
+        var productIngredientsMap = @Html.Raw(Json.Encode(ViewBag.ProductToIngredientIdsMap));
+        var allIngredients = @Html.Raw(Json.Encode(ViewBag.AllIngredients));
+
+
+    // Funzione per aggiungere un ingrediente alla lista visiva e un input nascosto al form.
+    function addIngredientToList(value, text) {
+        // Verifica se l'ingrediente è già stato aggiunto per evitare duplicati.
+        if ($('#selectedIngredients input[value="' + value + '"]').length == 0) {
+            var listItem = $('<li>')
+                .text(text)
+                .attr('data-id', value);
+
+            var removeBtn = $('<button>')
+                .text('Remove')
+                .addClass('btn btn-danger btn-sm')
+                .click(function () {
+                    $(this).parent().remove();
+                    $('input[name="SelectedIngredientIDs"][value="' + value + '"]').remove();
+                });
+
+            listItem.append(removeBtn);
+
+            var hiddenInput = $('<input>')
+                .attr({
+                    type: 'hidden',
+                    name: 'SelectedIngredientIDs',
+                    value: value
+                });
+
+            $('#selectedIngredients').append(listItem);
+            $('#selectedIngredients').append(hiddenInput);
+        }
+    }
+
+    // Carica gli ingredienti già selezionati quando si carica la pagina.
+    $.each(selectedIngredientIDs, function(i, id) {
+        var ingredient = allIngredients.find(x => x.Value == id);
+        if (ingredient) {
+            addIngredientToList(ingredient.Value, ingredient.Text);
+        }
+    });
+
+        for (var productId in productIngredientsMap) {
+            var ingredientIds = productIngredientsMap[productId];
+            ingredientIds.forEach(function (ingredientId) {
+                var ingredient = allIngredients.find(function (i) { return i.IngredientID == ingredientId; });
+                if (ingredient) {
+                    addIngredientToList(ingredient.IngredientID, ingredient.Name);
+                }
+            });
+
+        };
+</script>
+}
+*@

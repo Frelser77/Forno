@@ -1,0 +1,129 @@
+﻿@model Forno.Models.Orderr
+
+@{
+    ViewBag.Title = "Details";
+}
+
+<h2>Details</h2>
+
+<div>
+    <h4>Orderr</h4>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            @Html.DisplayNameFor(model => model.AppUser.Username)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.AppUser.Username)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.OrderDate)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.OrderDate)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+
+        <dd class="status-text">
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+
+        <dt>
+            @Html.DisplayNameFor(model => model.TotalPrice)
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.TotalPrice)
+        </dd>
+
+        <dt>
+            Products
+        </dt>
+        <dd>
+            <ul>
+                @foreach (var detail in Model.OrderDetail)
+                {
+                    <li>@detail.Product.Name - Qty: @detail.Quantity - Price: @detail.Product.Price</li>
+                }
+            </ul>
+        </dd>
+    </dl>
+    @Html.ActionLink("Details", "Details", new { id = Model.OrderID }, new { @class = "btn btn-info btn-sm" })
+    @if (User.IsInRole("Admin") || (User.Identity.IsAuthenticated && User.Identity.Name == Model.AppUser.Username))
+    {
+        @Html.ActionLink("Edit", "Edit", new { id = Model.OrderID }, new { @class = "btn btn-primary btn-sm" })
+        @Html.ActionLink("Delete", "Delete", new { id = Model.OrderID }, new { @class = "btn btn-danger btn-sm" })
+    }
+    @using (Html.BeginForm("ChangeStatus", "Orderrs", FormMethod.Post, new { id = "changeStatusForm" }))
+    {
+        @Html.AntiForgeryToken()
+
+        if (User.IsInRole("Admin"))
+        {
+            <button class="btn btn-warning btn-sm change-status"
+                    data-id="@Model.OrderID"
+                    data-status="@Model.Status">
+                Change Status
+            </button>
+        }
+    }
+</div>
+<p>
+    @Html.ActionLink("Edit", "Edit", new { id = Model.OrderID }) |
+    @Html.ActionLink("Back to List", "Index")
+</p>
+
+
+
+
+@section Scripts {
+    @Scripts.Render("~/bundles/jqueryval")
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            $('.change-status').on('click', function () {
+                var button = $(this);
+                var orderId = button.data('id');
+                var currentStatus = button.data('status');
+                var nextStatus = getNextStatus(currentStatus);
+
+                var data = {
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val(), // Assicurati che il token sia preso dal form
+                    id: orderId,
+                    newStatus: nextStatus
+                };
+
+                $.ajax({
+                    url: '@Url.Action("ChangeStatus", "Orderrs")',
+                    type: 'POST',
+                    data: data,
+                    success: function (response) {
+                        button.data('status', nextStatus);
+                        button.closest('tr').find('.status-text').text(nextStatus);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error(xhr.responseText);
+                        alert('Errore durante il cambiamento dello stato. Dettagli: ' + xhr.responseText);
+                    }
+
+                });
+            });
+
+            function getNextStatus(currentStatus) {
+                switch (currentStatus) {
+                    case "In Lavorazione": return "In Consegna";
+                    case "In Consegna": return "Consegnato";
+                    default: return "In Lavorazione";
+                }
+            }
+        });
+    </script>
+}

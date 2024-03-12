@@ -1,0 +1,40 @@
+﻿@model Forno.Models.Product
+
+@{
+    ViewBag.Title = "Delete Product";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            Confirm Delete
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <img src="@Model.ImageUrl ?? Url.Content(" ~ /path/to/default/image.jpg")" class="img-fluid" alt="Product Image">
+                </div>
+                <div class="col-md-8">
+                    <h5 class="card-title">@Model.Name</h5>
+                    <p class="card-text"><strong>Price:</strong> @Model.Price €</p>
+                    <p class="card-text"><strong>Delivery Time:</strong> @Model.DeliveryTime</p>
+                    <p><strong>Ingredients:</strong></p>
+                    <ul>
+                        @foreach (var ingredient in Model.Ingredient)
+                        {
+                            <li>@ingredient.Name</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+
+            @using (Html.BeginForm("DeleteConfirmed", "Products", new { id = Model.ProductID }, FormMethod.Post, new { @class = "mt-3" }))
+            {
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-danger">Delete</button>
+                @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-secondary ml-2" })
+            }
+        </div>
+    </div>
+</div>
