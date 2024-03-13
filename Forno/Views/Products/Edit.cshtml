@@ -62,37 +62,56 @@
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
-    <script type="text/javascript">
+<script type="text/javascript">
         $(document).ready(function () {
-            $('#btnAddIngredient').click(function () {
-                $('#AvailableIngredients option:selected').each(function () {
-                    var selectedText = $(this).text();
-                    var selectedValue = $(this).val();
-                    var listItem = $('<li>')
-                        .text(selectedText)
-                        .attr('data-id', selectedValue);
+    // Inizializza la lista degli ingredienti selezionati quando si carica la pagina.
+    var selectedIngredientIDs = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.SelectedIngredientIDs));
+    var allIngredients = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.AllIngredients));
 
-                    var removeBtn = $('<button>')
-                        .text('Remove')
-                        .addClass('btn btn-danger btn-sm')
-                        .click(function () {
-                            $(this).parent().remove();
-                        });
+    // Funzione per aggiungere un ingrediente alla lista visiva e un input nascosto al form.
+    function addIngredientToList(value, text) {
+        // Verifica se l'ingrediente è già stato aggiunto per evitare duplicati.
+        if ($('#selectedIngredients input[value="' + value + '"]').length == 0) {
+            var listItem = $('<li>')
+                .text(text)
+                .attr('data-id', value);
 
-                    listItem.append(removeBtn);
-                    $('#selectedIngredients').append(listItem);
-
-                    // Add a hidden field for the selected ingredient
-                    var hiddenInput = $('<input>')
-                        .attr({
-                            type: 'hidden',
-                            name: 'SelectedIngredientIDs',
-                            value: selectedValue
-                        });
-
-                    $('#selectedIngredients').append(hiddenInput);
+            var removeBtn = $('<button>')
+                .text('Remove')
+                .addClass('btn btn-danger btn-sm')
+                .click(function () {
+                    $(this).parent().remove();
+                    $('input[name="SelectedIngredientIDs"][value="' + value + '"]').remove();
                 });
-            });
+
+            listItem.append(removeBtn);
+
+            var hiddenInput = $('<input>')
+                .attr({
+                    type: 'hidden',
+                    name: 'SelectedIngredientIDs',
+                    value: value
+                });
+
+            $('#selectedIngredients').append(listItem);
+            $('#selectedIngredients').append(hiddenInput);
+        }
+    }
+
+    // Carica gli ingredienti già selezionati quando si carica la pagina.
+    $.each(selectedIngredientIDs, function(i, id) {
+        var ingredient = allIngredients.find(x => x.Value == id);
+        if (ingredient) {
+            addIngredientToList(ingredient.Value, ingredient.Text);
+        }
+    });
+
+    // Gestore per il click del bottone 'Add Ingredient'.
+    $('#btnAddIngredient').click(function () {
+        $('#AvailableIngredients option:selected').each(function () {
+            addIngredientToList($(this).val(), $(this).text());
         });
-    </script>
+    });
+});
+</script>
 }

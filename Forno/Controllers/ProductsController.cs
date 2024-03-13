@@ -24,13 +24,28 @@ namespace Forno.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Product product = db.Product.Include(p => p.Ingredient).FirstOrDefault(p => p.ProductID == id);
+            var product = db.Product.Include(p => p.Ingredient).FirstOrDefault(p => p.ProductID == id);
             if (product == null)
             {
                 return HttpNotFound();
             }
-            return View(product);
+            var allIngredients = db.Ingredient.ToList(); // Recupera tutti gli ingredienti
+
+            var viewModel = new ProductDetailsViewModel
+            {
+                Product = product,
+                AllIngredients = allIngredients
+            };
+
+            if (Request.IsAjaxRequest())
+            {
+                // Restituisce solo la vista parziale se la richiesta è AJAX
+                return PartialView("_Details", viewModel);
+            }
+            // Restituisce la vista completa se non è una richiesta AJAX
+            return View(viewModel);
         }
+
 
 
         // GET: Products/Create

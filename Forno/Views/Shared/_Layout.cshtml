@@ -5,10 +5,10 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <title>@ViewBag.Title - Forno</title>
-    @Styles.Render("~/Content/css")
     <!-- Bootstrap CSS 5.3.2 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    @Styles.Render("~/Content/css")
 </head>
 <body>
 
@@ -20,25 +20,44 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    <li class="nav-item">@Html.ActionLink("Home", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
-                    <li class="nav-item">@Html.ActionLink("API", "Index", "Help", new { area = "" }, new { @class = "nav-link" })</li>
+                    <li class="nav-item">@Html.ActionLink("Home", "Index", "Products", new { area = "" }, new { @class = "nav-link" })</li>
                 </ul>
                 <ul class="navbar-nav">
                     @if (User.Identity.IsAuthenticated)
                     {
+                        <li>
+                            <a href="@Url.Action("GetCart", "Orderrs")" class="nav-link">Carrello <span id="cart-item-count">0</span></a>
+                        </li>
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                 Benvenuto @User.Identity.Name
                             </a>
+
                             <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                @{
+                                    var userId = "";
+                                    if (HttpContext.Current.User.Identity is FormsIdentity identity)
+                                    {
+                                        FormsAuthenticationTicket ticket = identity.Ticket;
+                                        string userData = ticket.UserData;
+                                        // Supponendo che l'ID utente sia il primo elemento prima del separatore '|'
+                                        userId = userData.Split('|')[0];
+                                    }
+                                }
+
+                                <a class="dropdown-item" href="@Url.Action("Details", "AppUsers", new { id = userId })">Profilo</a>
+                                <a class="dropdown-item" href="@Url.Action("Index", "Orderrs")">I Miei Ordini</a>
+
+
                                 <a class="dropdown-item" href="@Url.Action("Logout", "Account")">Logout</a>
+
                                 @if (User.IsInRole("Admin"))
                                 {
                                     <div class="dropdown-divider"></div>
                                     <a class="dropdown-item" href="@Url.Action("Index", "Orderrs")">Ordini</a>
-                                    <a class="dropdown-item" href="@Url.Action("Index", "Products")">Prodotti</a>
                                     <a class="dropdown-item" href="@Url.Action("Index", "Ingredients")">Ingredienti</a>
                                 }
+
                             </div>
                         </li>
                     }
@@ -67,43 +86,376 @@
         </footer>
     </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <!-- Bootstrap Bundle JS include Popper -->
+    @Scripts.Render("~/bundles/jquery")
     <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
-    <!-- Toastr JS per le notifiche -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <!-- jQuery Validate -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
-    <!-- Validate Unobtrusive per la validazione lato client di ASP.NET MVC -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
+    @RenderSection("scripts", required: false)
+<script type="text/javascript">
+        // Estensione metodi validator per supportare la formattazione locale dei numeri
+        $.validator.methods.range = function (value, element, param) {
+            var globalizedValue = value.replace(",", ".");
+            return this.optional(element) || (globalizedValue >= param[0] && globalizedValue <= param[1]);
+        };
+
+        $.validator.methods.number = function (value, element) {
+            return this.optional(element) || /^-?(?:\d+|\d{1,3}(?:[\s\.,]\d{3})+)(?:[\.,]\d+)?$/.test(value);
+        };
+
+        // Gestione del caricamento del DOM
+        document.addEventListener('DOMContentLoaded', function () {
+            // Inizializzazione del modale di Bootstrap 5
+            var customizeModalSelector = '#customizeProductModal';
+            var customizeModal = new bootstrap.Modal(document.querySelector(customizeModalSelector), {
+                keyboard: false
+            });
+
+            // Funzione per aggiungere al carrello
+            function addToCart(productId, quantity, selectedIngredients, token) {
+                var formData = new FormData();
+                formData.append('productId', productId);
+                formData.append('quantity', quantity);
+                selectedIngredients.forEach(function (ingredient) {
+                    formData.append('selectedIngredients', ingredient);
+                });
+                formData.append('__RequestVerificationToken', token);
+
+                fetch('/Orderrs/AddToCart', {
+                    method: 'POST',
+                    body: formData // Invia come FormData invece di JSON.stringify
+                })
+                    .then(response => {
+                        if (!response.ok) throw new Error(response.statusText);
+                        return response.json();
+                    })
+                    .then(result => {
+                        if (result.success) {
+                            toastr.success('Prodotto aggiunto al carrello.');
+                            updateCartCount();
+                        } else {
+                            toastr.error('Errore durante l\'aggiunta al carrello: ' + result.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Errore durante l\'aggiunta al carrello:', error);
+                        toastr.error('Errore durante l\'aggiunta al carrello.');
+                    });
+
+                customizeModal.hide();
+            }
+
+            // Funzione per aggiornare il conteggio degli articoli nel carrello
+            function updateCartCount() {
+                var cartItemCountUrl = '/Orderrs/CartItemCount';
+                fetch(cartItemCountUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('cart-item-count').textContent = data.cartItemCount;
+                    })
+                    .catch(error => {
+                        console.error('Errore durante l\'aggiornamento del conteggio del carrello:', error);
+                    });
+            }
+
+            // Listener per il submit del modale di personalizzazione
+            document.querySelector(customizeModalSelector).addEventListener('submit', function (event) {
+                event.preventDefault();
+                var form = event.target.closest('form');
+                var productId = form.getAttribute('data-product-id');
+                var quantity = parseInt(form.quantity.value);
+                var selectedIngredients = Array.from(form.querySelectorAll('input[name="selectedIngredients"]:checked'))
+                    .map(input => parseInt(input.value));
+                var token = form.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                addToCart(productId, quantity, selectedIngredients, token);
+            });
+
+            // Listener per l'apertura del modale di personalizzazione
+            document.querySelectorAll('.add-to-cart-btn').forEach(button => {
+                button.addEventListener('click', function (event) {
+                    event.preventDefault();
+                    var productId = this.getAttribute('data-product-id');
+                    document.querySelector(customizeModalSelector + ' .modal-title').textContent = 'Personalizza ' + this.getAttribute('data-product-name');
+
+                    fetch('/Products/Details/' + productId, {
+                        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                    })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network response was not ok');
+                            return response.text();
+                        })
+                        .then(html => {
+                            document.querySelector(customizeModalSelector + ' .modal-body').innerHTML = html;
+                            customizeModal.show();
+                        })
+                        .catch(error => {
+                            console.error('Failed to fetch product details:', error);
+                        });
+                });
+            });
+
+
+
+            $('#checkout-button').click(function () {
+                console.log('Procedi al checkout');
+                $.ajax({
+                    url: '@Url.Action("Checkout", "Orderrs")',
+                    type: 'POST',
+                    dataType: 'json', // Puoi cambiare il tipo di dato se necessario
+                    contentType: 'application/json', // Se necessario
+                    success: function (result) {
+                        if (result.Success) {
+                            // Costruisce l'URL di reindirizzamento con l'ID dell'ordine restituito
+                            var orderConfirmationUrl = '/Orderrs/OrderConfirmation?orderId=' + result.OrderId;
+                            window.location.href = orderConfirmationUrl;
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        // Gestisci gli errori se necessario
+                        console.log(xhr.responseText);
+                        console.log(error, 'Errore durante il checkout');
+                        console.log(status, 'status durante il checkout');
+                    }
+                });
+});
+
+            // Inizializzazione del conteggio degli articoli nel carrello
+            updateCartCount();
+        });
+</script>
+
+    @if (TempData["success"] != null)
+    {
+        <script type="text/javascript">
+        toastr.success('@TempData["success"]');
+        </script>
+    }
+    @if (TempData["error"] != null)
+    {
+        <script type="text/javascript">
+        toastr.error('@TempData["error"]');
+        </script>
+    }
+</body>
+</html>
+@*
+        <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width" />
+        <title>@ViewBag.Title - Forno</title>
+        <!-- Bootstrap CSS 5.3.2 -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+        @Styles.Render("~/Content/css")
+    </head>
+    <body>
+
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container">
+                @Html.ActionLink("Forno", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">@Html.ActionLink("Home", "Index", "Home", new { area = "" }, new { @class = "nav-link" })</li>
+                        <li class="nav-item">@Html.ActionLink("API", "Index", "Help", new { area = "" }, new { @class = "nav-link" })</li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li>
+                                <a href="@Url.Action("GetCart", "Orderrs")" class="nav-link">Carrello <span id="cart-item-count">0</span></a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    Benvenuto @User.Identity.Name
+                                </a>
+
+                                <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                                    @{
+                                        var userId = "";
+                                        if (HttpContext.Current.User.Identity is FormsIdentity identity)
+                                        {
+                                            FormsAuthenticationTicket ticket = identity.Ticket;
+                                            string userData = ticket.UserData;
+                                            // Supponendo che l'ID utente sia il primo elemento prima del separatore '|'
+                                            userId = userData.Split('|')[0];
+                                        }
+                                    }
+
+                                    <a class="dropdown-item" href="@Url.Action("Details", "AppUsers", new { id = userId })">Profilo</a>
+                                    <a class="dropdown-item" href="@Url.Action("Index", "Orderrs")">I Miei Ordini</a>
+
+
+                                    <a class="dropdown-item" href="@Url.Action("Index", "Products")">Prodotti</a>
+                                    <a class="dropdown-item" href="@Url.Action("Logout", "Account")">Logout</a>
+
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <div class="dropdown-divider"></div>
+                                        <a class="dropdown-item" href="@Url.Action("Index", "Orderrs")">Ordini</a>
+                                        <a class="dropdown-item" href="@Url.Action("Index", "Products")">Prodotti</a>
+                                        <a class="dropdown-item" href="@Url.Action("Index", "Ingredients")">Ingredienti</a>
+                                    }
+
+                                </div>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                @Html.ActionLink("Login", "Login", "Account", new { area = "" }, new { @class = "nav-link" })
+                            </li>
+                            <li class="nav-item">
+                                @Html.ActionLink("Registrati", "Create", "AppUsers", new { area = "" }, new { @class = "nav-link" })
+                            </li>
+                        }
+                    </ul>
+
+                </div>
+            </div>
+        </nav>
+
+        <div class="container body-content">
+            @RenderBody()
+            <hr />
+            <footer class="footer mt-auto py-3 bg-light">
+                <div class="container">
+                    <span class="text-muted">&copy; @DateTime.Now.Year - Forno</span>
+                </div>
+            </footer>
+        </div>
+
+        @Scripts.Render("~/bundles/jquery")
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.3/jquery.validate.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+        @RenderSection("scripts", required: false)
     <script type="text/javascript">
-
-        $(document).ready(function () {
-            @if (TempData["success"] != null)
-            {
-                <text>
-                toastr.success('@TempData["success"].ToString()');
-                </text>
-            }
-            @if (TempData["error"] != null)
-            {
-                <text>
-            toastr.error('@TempData["error"].ToString()');
-                </text>
-            }
-
+            // Estensione metodi validator per supportare la formattazione locale dei numeri
             $.validator.methods.range = function (value, element, param) {
                 var globalizedValue = value.replace(",", ".");
                 return this.optional(element) || (globalizedValue >= param[0] && globalizedValue <= param[1]);
-            }
+            };
 
             $.validator.methods.number = function (value, element) {
                 return this.optional(element) || /^-?(?:\d+|\d{1,3}(?:[\s\.,]\d{3})+)(?:[\.,]\d+)?$/.test(value);
-            }
-        });
+            };
 
+        $(document).ready(function () {
+            // Inizializzazione del modale di Bootstrap
+            var customizeModal = new bootstrap.Modal(document.getElementById('customizeProductModal'), {
+                keyboard: false
+            });
+
+            // Funzione per aggiungere al carrello
+            function addToCart(productId, quantity, selectedIngredients) {
+                var data = {
+                    productId: productId,
+                    quantity: quantity,
+                    selectedIngredients: selectedIngredients
+                };
+
+                // Aggiungi qui l'URL corretto fornito dal tuo routing ASP.NET MVC
+                $.ajax({
+                    url: '/Orderrs/AddToCart',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (result) {
+                        if (result.success) {
+                            toastr.success('Prodotto aggiunto al carrello.');
+                            updateCartCount();
+                        } else {
+                            toastr.error('Errore durante l\'aggiunta al carrello.');
+                        }
+                    },
+                    error: function () {
+                        toastr.error('Errore durante l\'aggiunta al carrello.');
+                    }
+                });
+            }
+
+            // Funzione per aggiornare il conteggio degli articoli nel carrello
+            function updateCartCount() {
+                // Aggiungi qui l'URL corretto fornito dal tuo routing ASP.NET MVC
+                $.ajax({
+                    url: '/Orderrs/CartItemCount',
+                    type: 'GET',
+                    success: function (data) {
+                        $('#cart-item-count').text(data.cartItemCount);
+                    },
+                    error: function () {
+                        toastr.error('Errore durante l\'aggiornamento del conteggio del carrello.');
+                    }
+                });
+            }
+            $('.add-to-cart-btn').on('click', function () {
+                console.log('Bottone Personalizza cliccato');
+                var productId = $(this).data('product-id');
+                loadProductDetails(productId); // Questa funzione si occupa di mostrare il modale
+            });
+
+            function loadProductDetails(productId) {
+                console.log('Caricamento dettagli prodotto per ID:', productId);
+                $.ajax({
+                    url: '/Products/Details/' + productId,
+                    type: 'GET',
+                    success: function (response) {
+                        console.log('Dettagli prodotto caricati');
+                        $('#customizeProductModal .modal-body').html(response);
+                        customizeModal.show();
+                    },
+                    error: function () {
+                        console.error('Errore nel caricamento dei dettagli del prodotto.');
+                    }
+                });
+            }
+
+
+            // Listener per il submit del form all'interno del modale
+            $('#customizeProductModal').on('submit', '#add-to-cart-form', function (event) {
+                event.preventDefault();2
+                var form = $(this);
+                var productId = form.data('product-id');
+                var quantity = parseInt(form.find('input[name="quantity"]').val());
+                var selectedIngredients = form.find('input[name="selectedIngredients"]:checked').map(function () {
+                    return parseInt($(this).val());
+                }).get();
+                addToCart(productId, quantity, selectedIngredients);
+                customizeModal.hide();
+            });
+
+            // Chiamata per aggiornare il conteggio del carrello al caricamento della pagina
+            updateCartCount();
+        });
     </script>
-    @RenderSection("scripts", required: false)
-</body>
-</html>
+
+        @if (TempData["success"] != null)
+        {
+            <script type="text/javascript">
+            toastr.success('@TempData["success"]');
+            </script>
+        }
+        @if (TempData["error"] != null)
+        {
+            <script type="text/javascript">
+            toastr.error('@TempData["error"]');
+            </script>
+        }
+    </body>
+    </html>
+
+
+*@

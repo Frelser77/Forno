@@ -1,0 +1,64 @@
+﻿@model List<Forno.Models.CartViewModel>
+
+@{
+    ViewBag.Title = "Il Mio Carrello";
+}
+
+<h2>Il Mio Carrello</h2>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Prodotto</th>
+                <th>Quantità</th>
+                <th>Azioni</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>@item.ProductName</td>
+                    <td>@item.Quantity</td>
+                    <td>
+                        <button class="btn btn-info btn-sm update-quantity" data-product-name="@item.ProductName">Aggiorna</button>
+                        <button class="btn btn-danger btn-sm remove-product" data-product-name="@item.ProductName">Rimuovi</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="text-right mt-3">
+        <button id="checkout-button" class="btn btn-success" data-url="@Url.Action("Checkout", "Orderrs")">Procedi al Checkout</button>
+
+    </div>
+}
+else
+{
+    <p>Il tuo carrello è vuoto.</p>
+}
+
+
+@section Scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.update-quantity').click(function () {
+                var productName = $(this).data('product-name');
+                var newQuantity = prompt('Inserisci la nuova quantità per ' + productName);
+                if (newQuantity != null && newQuantity > 0) {
+                    // metodo per aggiornare la quantità
+                    console.log('Aggiorna la quantità per ' + productName + ' a ' + newQuantity);
+                }
+            });
+
+            $('.remove-product').click(function () {
+                var productName = $(this).data('product-name');
+                // Metodo per rimuovere un prodotto dal carrello
+                console.log('Rimuovi ' + productName + ' dal carrello');
+            });
+           
+    </script>
+}

@@ -54,7 +54,6 @@
             </ul>
         </dd>
     </dl>
-    @Html.ActionLink("Details", "Details", new { id = Model.OrderID }, new { @class = "btn btn-info btn-sm" })
     @if (User.IsInRole("Admin") || (User.Identity.IsAuthenticated && User.Identity.Name == Model.AppUser.Username))
     {
         @Html.ActionLink("Edit", "Edit", new { id = Model.OrderID }, new { @class = "btn btn-primary btn-sm" })

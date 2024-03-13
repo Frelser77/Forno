@@ -6,6 +6,7 @@ using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Web.Mvc;
+using System.Web.Security;
 
 namespace Forno.Controllers
 {
@@ -59,12 +60,11 @@ namespace Forno.Controllers
         [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "OrderID,AppUserID,Status,OrderDate")] Orderr orderr, List<int> selectedProductIds, List<int> quantities)
+        public ActionResult Create(Orderr order, List<int> selectedProductIds, List<int> quantities)
         {
-
             if (ModelState.IsValid)
             {
-                orderr.Status = "In Preparazione";
+                order.Status = "In Lavorazione";
                 decimal totalPrice = 0;
                 var orderDetails = new List<OrderDetail>();
 
@@ -77,25 +77,24 @@ namespace Forno.Controllers
                         {
                             ProductID = product.ProductID,
                             Quantity = quantities[i],
-                            // prezzo modificato o sconti aggiungerli qui
+                            // Non hai il campo Price qui, quindi lo salteremo
                         };
 
                         orderDetails.Add(detail);
-                        totalPrice += product.Price * quantities[i];
+                        totalPrice += product.Price * quantities[i]; // Calcolo del totale qui
                     }
                 }
 
-                orderr.TotalPrice = totalPrice;
-                orderr.OrderDetail = orderDetails; // Assumendo che OrderDetail sia una lista nel tuo modello Orderr
+                order.TotalPrice = totalPrice; // Impostazione del totale calcolato
+                order.OrderDetail = orderDetails;
 
-                db.Orderr.Add(orderr);
+                db.Orderr.Add(order);
                 db.SaveChanges();
                 return RedirectToAction("Index");
             }
 
-            ViewBag.AppUserID = new SelectList(db.AppUser, "AppUserID", "Username", orderr.AppUserID);
-            ViewBag.Products = db.Product.ToList();
-            return View(orderr);
+            PrepareViewBag(); // Preparazione della ViewBag per la vista in caso di fallimento
+            return View(order);
         }
 
 
@@ -139,16 +138,32 @@ namespace Forno.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public ActionResult Edit([Bind(Include = "OrderID,AppUserID,OrderDate,Status,TotalPrice")] Orderr orderr)
+        public ActionResult Edit(Orderr order)
         {
             if (ModelState.IsValid)
             {
-                db.Entry(orderr).State = EntityState.Modified;
-                db.SaveChanges();
-                return RedirectToAction("Index");
+                // Usare db.Entry(order).State = EntityState.Modified solo se si è sicuri che tutti i campi dell'entità siano affidabili
+                // Altrimenti, recuperare l'entità dal database e aggiornarla manualmente
+                var existingOrder = db.Orderr.Include(o => o.OrderDetail).FirstOrDefault(o => o.OrderID == order.OrderID);
+                if (existingOrder != null)
+                {
+                    // Aggiorna qui le proprietà di existingOrder con i valori di order
+                    // db.Entry(existingOrder).CurrentValues.SetValues(order);
+
+                    db.SaveChanges();
+                    return RedirectToAction("Index");
+                }
             }
-            ViewBag.AppUserID = new SelectList(db.AppUser, "AppUserID", "Username", orderr.AppUserID);
-            return View(orderr);
+
+            PrepareViewBag(); // Preparazione della ViewBag per la vista
+            return View(order);
+        }
+
+        private void PrepareViewBag()
+        {
+            ViewBag.AppUserID = new SelectList(db.AppUser, "AppUserID", "Username");
+            ViewBag.Products = db.Product.ToList();
+            // Altre preparazioni della ViewBag necessarie
         }
 
         // GET: Orderrs/Delete/5
@@ -252,77 +267,171 @@ namespace Forno.Controllers
             return Json(new { success = false, message = "Order not found." });
         }
 
-        // Metodo per il carrello
-        // GET: Orderrs/GetCart
-        public ActionResult GetCart()
+        private int GetCurrentUserId()
         {
-            // Recupera l'ID dell'utente corrente
-            int appUserId = 1; // Sostituire con il vero ID dell'utente corrente
-            // Recupera l'ordine corrente dell'utente
-            Orderr cart = db.Orderr
-                .Include(o => o.OrderDetail.Select(od => od.Product))
-                .FirstOrDefault(o => o.AppUserID == appUserId && o.Status == "In Preparazione");
+            if (HttpContext.User.Identity is FormsIdentity identity)
+            {
+                FormsAuthenticationTicket ticket = identity.Ticket;
+                // userData è nel formato "userID|role"
+                var userDataParts = ticket.UserData.Split('|');
+                if (userDataParts.Length > 0)
+                {
+                    return int.Parse(userDataParts[0]); // Il primo elemento è l'userID
+                }
+            }
+            return -1; // oppure null o un'altra convenzione per indicare che l'utente non è autenticato
+        }
+
+        private Orderr GetOrCreateCart()
+        {
+            int? appUserId = GetCurrentUserId();
+
+            if (!appUserId.HasValue || appUserId.Value <= 0)
+            {
+                throw new UnauthorizedAccessException("L'utente non è loggato.");
+            }
+
+            var cart = db.Orderr.FirstOrDefault(o => o.AppUserID == appUserId && o.Status == "In Lavorazione");
+
             if (cart == null)
             {
                 cart = new Orderr
                 {
-                    AppUserID = appUserId,
-                    Status = "In Preparazione",
+                    AppUserID = appUserId.Value,
+                    Status = "In Lavorazione",
                     OrderDate = DateTime.Now
                 };
                 db.Orderr.Add(cart);
                 db.SaveChanges();
             }
-            return View(cart);
+
+            return cart;
         }
 
+
         // Metodo per aggiungere un prodotto al carrello
-        // POST: Orderrs/AddToCart
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult AddToCart(int productId, int quantity)
+        public ActionResult AddToCart(int productId, int quantity, List<int> selectedIngredients)
         {
-            // Recupera l'ID dell'utente corrente
-            int appUserId = 1; // Sostituire con il vero ID dell'utente corrente
-            // Recupera l'ordine corrente dell'utente
-            Orderr cart = db.Orderr
-                .Include(o => o.OrderDetail)
-                .FirstOrDefault(o => o.AppUserID == appUserId && o.Status == "In Preparazione");
-            if (cart == null)
+            var cart = GetOrCreateCart();
+            var product = db.Product.Find(productId);
+            if (product == null)
             {
-                cart = new Orderr
-                {
-                    AppUserID = appUserId,
-                    Status = "In Preparazione",
-                    OrderDate = DateTime.Now
-                };
-                db.Orderr.Add(cart);
+                return Json(new { success = false, message = "Prodotto non trovato." });
             }
-            // Aggiungi il prodotto all'ordine
-            OrderDetail detail = cart.OrderDetail.FirstOrDefault(od => od.ProductID == productId);
-            if (detail == null)
+
+            var existingDetail = cart.OrderDetail.FirstOrDefault(od => od.ProductID == productId);
+
+            if (existingDetail != null)
             {
-                detail = new OrderDetail
-                {
-                    ProductID = productId,
-                    Quantity = quantity
-                };
-                cart.OrderDetail.Add(detail);
+                existingDetail.Quantity += quantity;
             }
             else
             {
-                detail.Quantity += quantity;
+                var orderDetail = new OrderDetail
+                {
+                    OrderrID = cart.OrderID,
+                    ProductID = productId,
+                    Quantity = quantity
+                    // Aggiungi qui altre proprietà se necessario
+                };
+                db.OrderDetail.Add(orderDetail);
             }
+
             db.SaveChanges();
-            return RedirectToAction("GetCart");
+
+            var updatedCartItemCount = cart.OrderDetail.Sum(item => item.Quantity);
+            return Json(new
+            {
+                success = true,
+                cartItemCount = updatedCartItemCount
+            });
         }
 
-        // metodo per prendere l'id dell'utente corrente
-        private int GetCurrentUserId()
+        // Metodo per mostrare il carrello dell'utente
+        public ActionResult GetCart()
         {
+            var cart = GetOrCreateCart();
+            var orderDetails = cart.OrderDetail.Select(od => new CartViewModel
+            {
+                ProductName = od.Product.Name,
+                Quantity = od.Quantity
+            }).ToList();
 
-            return 1; // Sostituire con il vero ID dell'utente corrente
+            return View(orderDetails);
         }
+
+        // Metodo per mostrare il numero degli articoli nel carrello
+        public ActionResult CartItemCount()
+        {
+            var cart = GetOrCreateCart();
+            var count = cart.OrderDetail.Sum(item => item.Quantity);
+            return Json(new { cartItemCount = count }, JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Checkout()
+        {
+            var cart = GetOrCreateCart();
+            if (!cart.OrderDetail.Any())
+            {
+                TempData["error"] = "Il tuo carrello è vuoto.";
+                return RedirectToAction("Index");
+            }
+
+            cart.Status = "Confermato";
+            cart.TotalPrice = cart.OrderDetail.Sum(d => d.Quantity * d.Product.Price); // Calcolo del prezzo totale
+
+            // Creazione di un nuovo oggetto Orderr
+            var order = new Orderr
+            {
+                OrderDetail = cart.OrderDetail.ToList(),
+                // Altri campi di Orderr, se necessario
+            };
+
+            // Salvataggio dell'ordine nel database
+            db.Orderr.Add(order);
+            db.SaveChanges();
+
+            TempData["success"] = "Il checkout è stato completato con successo.";
+            var result = new { Success = true, OrderId = order.OrderID };
+            return Json(result);
+        }
+
+        // Metodo per mostrare la conferma dell'ordine
+        public ActionResult OrderConfirmation(int orderId)
+        {
+            var order = db.Orderr.FirstOrDefault(o => o.OrderID == orderId && o.Status == "Confermato");
+            if (order == null)
+            {
+                return HttpNotFound();
+            }
+
+            // Esegui il binding dei dati necessari per la vista di conferma
+            return View(order);
+        }
+
+        // Metodo per rimuovere un prodotto dal carrello
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult RemoveFromCart(int orderDetailId)
+        {
+            var orderDetail = db.OrderDetail.Find(orderDetailId);
+            if (orderDetail == null)
+            {
+                return Json(new { success = false, message = "Dettaglio dell'ordine non trovato." });
+            }
+
+            db.OrderDetail.Remove(orderDetail);
+            db.SaveChanges();
+
+            var cartItemCount = GetOrCreateCart().OrderDetail.Sum(item => item.Quantity);
+            return Json(new { success = true, cartItemCount });
+        }
+
+
 
         protected override void Dispose(bool disposing)
         {

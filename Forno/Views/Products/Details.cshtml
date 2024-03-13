@@ -1,28 +1,45 @@
-﻿@model Forno.Models.Product
+﻿@model Forno.Models.ProductDetailsViewModel
 
 @{
     ViewBag.Title = "Details";
 }
+<div class="container">
+    <div class="row align-items-center justify-content-center">
+        <div class="col">
 
-<div class="card mb-3" style="max-width: 540px;">
-    <div class="row no-gutters">
-        <div class="col-md-4">
-            <img src="@Model.ImageUrl" class="card-img" alt="Immagine del prodotto">
-        </div>
-        <div class="col-md-8">
-            <div class="card-body">
-                <h5 class="card-title">@Model.Name</h5>
-                <p class="card-text"><small class="text-muted">Prezzo: @Model.Price</small></p>
-                <p class="card-text"><small class="text-muted">Tempo di consegna: @Model.DeliveryTime</small></p>
-                <h6>Ingredienti:</h6>
-                <ul>
-                    @foreach (var ingredient in Model.Ingredient)
-                    {
-                        <li>@ingredient.Name</li>
-                    }
-                </ul>
-                <a href="@Url.Action("Edit", "Products", new { id = Model.ProductID })" class="btn btn-primary">Edit</a>
-                <a href="@Url.Action("Index", "Products")" class="btn btn-secondary">Back to List</a>
+            <div class="card mb-3 details-img"style="background-image: url(@Model.Product.ImageUrl);" alt="Immagine del prodotto">
+                <div class="row">
+                    <div class="col-md-7">
+                        @*<img src="@Model.ImageUrl" class="card-img" alt="Immagine del prodotto">*@
+                    </div>
+                    <div class="col">
+                        <div class="card-body">
+                            <h5 class="card-title">@Model.Product.Name</h5>
+                            <p class="card-text"><small class="text-muted">Prezzo: @Model.Product.Price</small></p>
+                            <p class="card-text"><small class="text-muted">Tempo di consegna: @Model.Product.DeliveryTime</small></p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col">
+                            <div class="card-body">
+                                <h6>Ingredienti:</h6>
+                                <ul>
+                                    @foreach (var ingredient in Model.Product.Ingredient)
+                                    {
+                                        <li>@ingredient.Name</li>
+                                    }
+                                </ul>
+                                <div class="d-flex justify-content-end align-items-end mb-2">
+                                    <a href="@Url.Action("Edit", "Products", new { id = Model.Product.ProductID })" class="btn btn-outline-dark btn-sm">Edit</a>
+                                    <a href="@Url.Action("Index", "Products")" class="btn btn-outline-secondary btn-sm">Back to List</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                
+                </div>
             </div>
         </div>
     </div>
