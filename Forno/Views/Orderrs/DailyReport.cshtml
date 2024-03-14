@@ -1,0 +1,55 @@
+﻿@using Forno.Models
+@{
+    ViewBag.Title = "Daily Report";
+    var topProducts = ViewBag.TopProducts as List<TopProductViewModel>;
+
+}
+
+<h2>Daily Report</h2>
+
+<div class="form-group">
+    <label for="reportDate">Select Date:</label>
+    <input type="date" id="reportDate" class="form-control" />
+</div>
+
+<button id="getReport" class="btn btn-primary">Get Report</button>
+
+<div id="reportResults">
+    <!-- I risultati del report verranno visualizzati qui -->
+</div>
+
+
+<div>
+    <h3>Report Totals</h3>
+    <p>Total Users: @ViewBag.TotalUsers</p>
+    <p>Total Orders: @ViewBag.TotalOrders</p>
+    <p>Total Products: @ViewBag.TotalProducts</p>
+    <p>Total Revenue: €@ViewBag.TotalRevenue</p>
+
+    <h3>Top Selling Products</h3>
+    @foreach (var product in ViewBag.TopProducts as List<Forno.Models.TopProductViewModel>)
+    {
+        <p>Product Name: @product.Name - Count: @product.Count</p>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $("#getReport").click(function () {
+                var selectedDate = $("#reportDate").val();
+                $.ajax({
+                    url: '@Url.Action("GetDailyReport", "Orderrs")',
+                    type: 'POST',
+                    data: { day: selectedDate },
+                    success: function (data) {
+                        $("#reportResults").html("Total Orders: " + data.totalOrders + "<br>Total Revenue: €" + data.totalRevenue.toFixed(2));
+                    },
+                    error: function () {
+                        alert("Error retrieving report.");
+                    }
+                });
+            });
+        });
+    </script>
+}

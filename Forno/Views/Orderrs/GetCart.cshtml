@@ -23,17 +23,39 @@
                     <td>@item.ProductName</td>
                     <td>@item.Quantity</td>
                     <td>
-                        <button class="btn btn-info btn-sm update-quantity" data-product-name="@item.ProductName">Aggiorna</button>
-                        <button class="btn btn-danger btn-sm remove-product" data-product-name="@item.ProductName">Rimuovi</button>
+                        @using (Html.BeginForm("IncreaseProductQuantity", "Orderrs", new { orderDetailId = item.OrderDetailID }, FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-info btn-sm">+</button>
+                        }
+                        @using (Html.BeginForm("DecreaseProductQuantity", "Orderrs", new { orderDetailId = item.OrderDetailID }, FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-info btn-sm">-</button>
+                        }
+                        @using (Html.BeginForm("RemoveFromCart", "Orderrs", new { orderDetailId = item.OrderDetailID }, FormMethod.Post))
+                        {
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger btn-sm">Rimuovi</button>
+                        }
                     </td>
                 </tr>
             }
+
         </tbody>
     </table>
 
+    using (Html.BeginForm("EmptyCart", "Orderrs", FormMethod.Post))
+    {
+        @Html.AntiForgeryToken()
+        <button type="submit" class="btn btn-warning">Svuota Carrello</button>
+    }
+
+
+
     <div class="text-right mt-3">
         <button id="checkout-button" class="btn btn-success" data-url="@Url.Action("Checkout", "Orderrs")">Procedi al Checkout</button>
-
+        @Html.AntiForgeryToken()
     </div>
 }
 else
@@ -45,20 +67,27 @@ else
 @section Scripts {
     <script type="text/javascript">
         $(document).ready(function () {
-            $('.update-quantity').click(function () {
-                var productName = $(this).data('product-name');
-                var newQuantity = prompt('Inserisci la nuova quantità per ' + productName);
-                if (newQuantity != null && newQuantity > 0) {
-                    // metodo per aggiornare la quantità
-                    console.log('Aggiorna la quantità per ' + productName + ' a ' + newQuantity);
-                }
+            $('#checkout-button').click(function () {
+                var token = $('input[name="__RequestVerificationToken"]').val(); // Assicurati che questo selettore corrisponda effettivamente a un input nel tuo form
+                console.log('Procedi al checkout');
+                $.ajax({
+                    url: $(this).data('url'), // Assicurati che questo sia il modo corretto per recuperare l'URL dall'attributo data-url del pulsante
+                    type: 'POST',
+                    data: {
+                        __RequestVerificationToken: token // Includi il token come parte dei dati del form
+                    },
+                    success: function (result) {
+                        if (result.Success) {
+                            var orderConfirmationUrl = '/Orderrs/OrderConfirmation?orderId=' + result.OrderId;
+                            window.location.href = orderConfirmationUrl;
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.log(xhr.responseText);
+                        console.log(error, 'Errore durante il checkout');
+                    }
+                });
             });
-
-            $('.remove-product').click(function () {
-                var productName = $(this).data('product-name');
-                // Metodo per rimuovere un prodotto dal carrello
-                console.log('Rimuovi ' + productName + ' dal carrello');
-            });
-           
+        });
     </script>
 }

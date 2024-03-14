@@ -1,20 +1,32 @@
 ﻿using Forno.Models;
+using System;
 using System.Data;
 using System.Data.Entity;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Web;
 using System.Web.Mvc;
 
 namespace Forno.Controllers
 {
     public class ProductsController : Controller
     {
-        private ModelDbContext db = new ModelDbContext();
+        private readonly ModelDbContext db = new ModelDbContext();
 
         // GET: Products
-        public ActionResult Index()
+        public ActionResult Index(string searchString)
         {
-            return View(db.Product.ToList());
+            var products = from p in db.Product
+                           select p;
+
+            if (!String.IsNullOrEmpty(searchString))
+            {
+                products = products.Where(s => s.Name.Contains(searchString)
+                                               || s.Ingredient.Any(i => i.Name.Contains(searchString)));
+            }
+
+            return View(products.ToList());
         }
 
         // GET: Products/Details/5
@@ -29,7 +41,7 @@ namespace Forno.Controllers
             {
                 return HttpNotFound();
             }
-            var allIngredients = db.Ingredient.ToList(); // Recupera tutti gli ingredienti
+            var allIngredients = db.Ingredient.ToList();
 
             var viewModel = new ProductDetailsViewModel
             {
@@ -43,6 +55,7 @@ namespace Forno.Controllers
                 return PartialView("_Details", viewModel);
             }
             // Restituisce la vista completa se non è una richiesta AJAX
+            ViewBag.AllProducts = db.Product.ToList();
             return View(viewModel);
         }
 
@@ -58,7 +71,7 @@ namespace Forno.Controllers
         // POST: Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create([Bind(Include = "Name,Price,DeliveryTime,SelectedIngredientIDs,ImageUrl")] Product product)
+        public ActionResult Create([Bind(Include = "Name,Price,DeliveryTime,SelectedIngredientIDs,ImageUrl")] Product product, HttpPostedFileBase ImageUpload)
         {
             if (ModelState.IsValid)
             {
@@ -70,6 +83,15 @@ namespace Forno.Controllers
                     {
                         product.Ingredient.Add(ingredient);
                     }
+                }
+
+                if (ImageUpload != null && ImageUpload.ContentLength > 0)
+                {
+                    var fileName = Path.GetFileName(ImageUpload.FileName);
+                    var path = Path.Combine(Server.MapPath("~/Content/Images/"), fileName);
+                    ImageUpload.SaveAs(path);
+
+                    product.ImageUrl = fileName; // Salva solo il nome del file
                 }
 
                 db.Product.Add(product);
@@ -95,8 +117,8 @@ namespace Forno.Controllers
                 return HttpNotFound();
             }
 
-            // Prepari la lista di tutti gli ingredienti disponibili.
-            ViewBag.AllIngredients = new SelectList(db.Ingredient.ToList(), "IngredientID", "Name", product.Ingredient.Select(i => i.IngredientID).ToList());
+            ViewBag.IngredientID = new MultiSelectList(db.Ingredient.ToList(), "IngredientID", "Name", product.Ingredient.Select(i => i.IngredientID).ToList());
+            ViewBag.SelectedIngredientIDs = product.Ingredient.Select(i => i.IngredientID).ToArray();
 
             return View(product);
         }
@@ -109,26 +131,43 @@ namespace Forno.Controllers
         // Per altri dettagli, vedere https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit([Bind(Include = "ProductID,Name,Price,DeliveryTime,ImageUrl,SelectedIngredientIDs")] Product productToUpdate)
+        public ActionResult Edit(Product productToUpdate, HttpPostedFileBase ImageUpload, int[] SelectedIngredientIDs)
         {
             if (ModelState.IsValid)
             {
-
-                Product dbProduct = db.Product.Include(p => p.Ingredient).FirstOrDefault(p => p.ProductID == productToUpdate.ProductID);
+                var dbProduct = db.Product.Include(p => p.Ingredient).FirstOrDefault(p => p.ProductID == productToUpdate.ProductID);
                 if (dbProduct != null)
                 {
-
                     dbProduct.Name = productToUpdate.Name;
                     dbProduct.Price = productToUpdate.Price;
                     dbProduct.DeliveryTime = productToUpdate.DeliveryTime;
-                    dbProduct.ImageUrl = productToUpdate.ImageUrl;
 
-                    dbProduct.Ingredient.Clear();
-                    if (productToUpdate.SelectedIngredientIDs != null)
+                    if (ImageUpload != null && ImageUpload.ContentLength > 0)
                     {
-                        foreach (var ingredientId in productToUpdate.SelectedIngredientIDs)
+                        // Rimuovi l'immagine esistente se presente
+                        if (!string.IsNullOrWhiteSpace(dbProduct.ImageUrl))
                         {
-                            Ingredient ingredientToAdd = db.Ingredient.Find(ingredientId);
+                            var existingImagePath = Path.Combine(Server.MapPath("~/Images/"), dbProduct.ImageUrl);
+                            if (System.IO.File.Exists(existingImagePath))
+                            {
+                                System.IO.File.Delete(existingImagePath);
+                            }
+                        }
+
+                        var fileName = Path.GetFileNameWithoutExtension(ImageUpload.FileName) + DateTime.Now.Ticks + Path.GetExtension(ImageUpload.FileName);
+                        var path = Path.Combine(Server.MapPath("~/Content/Images/"), fileName);
+                        ImageUpload.SaveAs(path);
+
+                        dbProduct.ImageUrl = fileName; // Salva solo il nome del file
+                    }
+
+                    // Controlla se sono stati forniti ID degli ingredienti
+                    if (SelectedIngredientIDs != null && SelectedIngredientIDs.Length > 0)
+                    {
+                        dbProduct.Ingredient.Clear();
+                        foreach (var ingredientId in SelectedIngredientIDs)
+                        {
+                            var ingredientToAdd = db.Ingredient.Find(ingredientId);
                             if (ingredientToAdd != null)
                             {
                                 dbProduct.Ingredient.Add(ingredientToAdd);
@@ -141,10 +180,9 @@ namespace Forno.Controllers
                     return RedirectToAction("Index");
                 }
             }
-            ViewBag.AllIngredients = new MultiSelectList(db.Ingredient.ToList(), "IngredientID", "Name", productToUpdate.SelectedIngredientIDs);
+            ViewBag.IngredientID = new MultiSelectList(db.Ingredient.ToList(), "IngredientID", "Name", productToUpdate.SelectedIngredientIDs);
             return View(productToUpdate);
         }
-
 
         // GET: Products/Delete
         public ActionResult Delete(int? id)

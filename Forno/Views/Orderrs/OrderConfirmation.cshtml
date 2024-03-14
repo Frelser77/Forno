@@ -1,9 +1,20 @@
-﻿@model Forno.Models.Orderr
-
+﻿@using System.Linq
+@model Forno.Models.Orderr
 @{
     ViewBag.Title = "Conferma Ordine";
 }
 
+@{
+    var deliveryTimeInMinutes = Model.OrderDetail
+        .Select(d =>
+        {
+            // Estrai le ore e i minuti dalla stringa di DeliveryTime
+            var timespan = TimeSpan.Parse(d.Product.DeliveryTime);
+            return (int)timespan.TotalMinutes; // Converti il timespan in minuti totali
+        });
+
+    var averageDeliveryTime = deliveryTimeInMinutes.Any() ? Math.Ceiling(deliveryTimeInMinutes.Average()) : 0;
+}
 <div class="order-confirmation">
     <h2>Conferma dell'Ordine</h2>
 
@@ -29,7 +40,7 @@
                         <td>@detail.Product.Name</td>
                         <td>@detail.Quantity</td>
                         <td>@detail.Product.Price.ToString("C")</td>
-                        <td>@(detail.Quantity * detail.Product.Price).ToString("C")</td>
+                        <td>@((detail.Quantity * detail.Product.Price).ToString("C"))</td>
                     </tr>
                 }
             </tbody>
@@ -44,11 +55,13 @@
         <div class="text-right">
             <p>Data Ordine: @Model.OrderDate.ToString("dd/MM/yyyy")</p>
             <p>Stato: @Model.Status</p>
+            <span class="badge bg-dark text-light">Tempo di Consegna Stimato: @averageDeliveryTime minuti</span>
+
             <a href="@Url.Action("Index", "Home")" class="btn btn-primary">Torna alla Home</a>
         </div>
     }
     else
     {
-        <p>Si è verificato un problema con la conferma del tuo ordine. Per favore contattaci per assistenza.</p>
+        <span class="alert-danger opacity-75 align-content-center">Si è verificato un problema con la conferma del tuo ordine. Per favore contattaci per assistenza.</span>
     }
 </div>

@@ -28,7 +28,7 @@
     <div class="form-group">
         @Html.LabelFor(model => model.OrderDate, htmlAttributes: new { @class = "control-label col-md-2" })
         <div class="col-md-10">
-            @Html.EditorFor(model => model.OrderDate, new { htmlAttributes = new { @class = "form-control" } })
+            @Html.EditorFor(model => model.OrderDate, new { htmlAttributes = new { @class = "form-control", @Value = Model.OrderDate.ToString("dd/MM/yyyy HH:mm:ss") } })
             @Html.ValidationMessageFor(model => model.OrderDate, "", new { @class = "text-danger" })
         </div>
     </div>
@@ -62,10 +62,16 @@
                    @(Model.OrderDetail.Any(od => od.Product.ProductID.ToString() == product.Value) ? "checked='checked'" : "") />
             @product.Text
         </div>
-        int[] ingredientIdsForProduct = ViewBag.ProductToIngredientIdsMap.ContainsKey(int.Parse(product.Value))
-                                   ? ViewBag.ProductToIngredientIdsMap[int.Parse(product.Value)]
-                                   : new int[] { };
-
+        int[] ingredientIdsForProduct;
+        if (int.TryParse(product.Value, out int productId)
+            && ViewBag.ProductToIngredientIdsMap.ContainsKey(productId))
+        {
+            ingredientIdsForProduct = ViewBag.ProductToIngredientIdsMap[productId];
+        }
+        else
+        {
+            ingredientIdsForProduct = new int[] { };
+        }
         <h3>Ingredients for @product.Text</h3>
         foreach (var ingredient in (IEnumerable<Forno.Models.Ingredient>)ViewBag.AllIngredients)
         {

@@ -1,10 +1,8 @@
 namespace Forno.Models
 {
-    using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-    using System.Data.Entity.Spatial;
 
     [Table("AppUser")]
     public partial class AppUser
@@ -15,6 +13,7 @@ namespace Forno.Models
             Orderr = new HashSet<Orderr>();
         }
 
+        [Display(Name = "User")]
         public int AppUserID { get; set; }
 
         [Required]
@@ -23,6 +22,7 @@ namespace Forno.Models
 
         [Required]
         [StringLength(255)]
+        [DataType(DataType.Password)]
         public string Password { get; set; }
 
         [Required]
@@ -30,9 +30,11 @@ namespace Forno.Models
         public string Role { get; set; }
 
         [StringLength(255)]
+        [Display(Name = "Shipping Address")]
         public string ShippingAddress { get; set; }
 
         [StringLength(1000)]
+        [Display(Name = "Personal Note")]
         public string Note { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

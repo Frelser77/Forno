@@ -17,8 +17,8 @@ textarea {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    filter: drop-shadow(10px 10px 20px black);
-    -webkit-filter: drop-shadow(10px 10px 20px black);
+ /*   filter: drop-shadow(10px 10px 20px black);
+    -webkit-filter: drop-shadow(10px 10px 20px black);*/
     background-repeat: no-repeat;
 }
 
@@ -27,14 +27,14 @@ textarea {
         -webkit-filter: grayscale(50%);
     }
 
-.modal.show .modal-dialog {
+.modal.show .modal-dialog.my-modal {
     justify-content: center;
     display: flex;
     align-items: center;
     transform: none;
 }
 
-.modal-content {
+.modal-content.my-modal {
     /* justify-content: center; */
     position: relative;
     display: flex;
@@ -47,5 +47,5 @@ textarea {
     border: none;
     border-radius: var(--bs-modal-border-radius);
     outline: 0;
-    margin-top:40px
+    margin-top: 40px
 }

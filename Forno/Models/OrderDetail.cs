@@ -1,10 +1,7 @@
 namespace Forno.Models
 {
-    using System;
-    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-    using System.Data.Entity.Spatial;
 
     [Table("OrderDetail")]
     public partial class OrderDetail
@@ -13,8 +10,10 @@ namespace Forno.Models
 
         public int OrderrID { get; set; }
 
+        [Display(Name = "Product identify")]
         public int ProductID { get; set; }
 
+        [Display(Name = "Quantity")]
         public int Quantity { get; set; }
 
         [StringLength(1000)]

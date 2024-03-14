@@ -30,7 +30,8 @@
             @Html.DisplayNameFor(model => model.Status)
         </dt>
 
-        <dd class="status-text">
+        <dd><!--class="status-text"-->
+            
             @Html.DisplayFor(model => model.Status)
         </dd>
 
@@ -54,27 +55,12 @@
             </ul>
         </dd>
     </dl>
-    @if (User.IsInRole("Admin") || (User.Identity.IsAuthenticated && User.Identity.Name == Model.AppUser.Username))
+    @if (User.IsInRole("Admin"))
     {
-        @Html.ActionLink("Edit", "Edit", new { id = Model.OrderID }, new { @class = "btn btn-primary btn-sm" })
         @Html.ActionLink("Delete", "Delete", new { id = Model.OrderID }, new { @class = "btn btn-danger btn-sm" })
-    }
-    @using (Html.BeginForm("ChangeStatus", "Orderrs", FormMethod.Post, new { id = "changeStatusForm" }))
-    {
-        @Html.AntiForgeryToken()
-
-        if (User.IsInRole("Admin"))
-        {
-            <button class="btn btn-warning btn-sm change-status"
-                    data-id="@Model.OrderID"
-                    data-status="@Model.Status">
-                Change Status
-            </button>
-        }
     }
 </div>
 <p>
-    @Html.ActionLink("Edit", "Edit", new { id = Model.OrderID }) |
     @Html.ActionLink("Back to List", "Index")
 </p>
 
@@ -83,46 +69,4 @@
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
-
-    <script type="text/javascript">
-        $(document).ready(function () {
-            var token = $('input[name="__RequestVerificationToken"]').val();
-
-            $('.change-status').on('click', function () {
-                var button = $(this);
-                var orderId = button.data('id');
-                var currentStatus = button.data('status');
-                var nextStatus = getNextStatus(currentStatus);
-
-                var data = {
-                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val(), // Assicurati che il token sia preso dal form
-                    id: orderId,
-                    newStatus: nextStatus
-                };
-
-                $.ajax({
-                    url: '@Url.Action("ChangeStatus", "Orderrs")',
-                    type: 'POST',
-                    data: data,
-                    success: function (response) {
-                        button.data('status', nextStatus);
-                        button.closest('tr').find('.status-text').text(nextStatus);
-                    },
-                    error: function (xhr, status, error) {
-                        console.error(xhr.responseText);
-                        alert('Errore durante il cambiamento dello stato. Dettagli: ' + xhr.responseText);
-                    }
-
-                });
-            });
-
-            function getNextStatus(currentStatus) {
-                switch (currentStatus) {
-                    case "In Lavorazione": return "In Consegna";
-                    case "In Consegna": return "Consegnato";
-                    default: return "In Lavorazione";
-                }
-            }
-        });
-    </script>
 }

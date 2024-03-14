@@ -3,44 +3,121 @@
 @{
     ViewBag.Title = "Details";
 }
-<div class="container">
-    <div class="row align-items-center justify-content-center">
-        <div class="col">
 
-            <div class="card mb-3 details-img"style="background-image: url(@Model.Product.ImageUrl);" alt="Immagine del prodotto">
-                <div class="row">
-                    <div class="col-md-7">
-                        @*<img src="@Model.ImageUrl" class="card-img" alt="Immagine del prodotto">*@
-                    </div>
-                    <div class="col">
-                        <div class="card-body">
-                            <h5 class="card-title">@Model.Product.Name</h5>
-                            <p class="card-text"><small class="text-muted">Prezzo: @Model.Product.Price</small></p>
-                            <p class="card-text"><small class="text-muted">Tempo di consegna: @Model.Product.DeliveryTime</small></p>
-                        </div>
-                    </div>
+<style>
+    body{
+     background-image: url(/Content/Images/@Model.Product.ImageUrl);
+     background-size: cover;
+     background-repeat: no-repeat;
+     background-attachment: fixed;
+     background-position: center;
+    }
 
-                    <div class="row">
-                        <div class="col">
-                            <div class="card-body">
-                                <h6>Ingredienti:</h6>
-                                <ul>
-                                    @foreach (var ingredient in Model.Product.Ingredient)
-                                    {
-                                        <li>@ingredient.Name</li>
-                                    }
-                                </ul>
-                                <div class="d-flex justify-content-end align-items-end mb-2">
-                                    <a href="@Url.Action("Edit", "Products", new { id = Model.Product.ProductID })" class="btn btn-outline-dark btn-sm">Edit</a>
-                                    <a href="@Url.Action("Index", "Products")" class="btn btn-outline-secondary btn-sm">Back to List</a>
-                                </div>
-                            </div>
-                        </div>
+    .container.my{
+        height: 86.5vh;
+    }
 
+</style>
+
+<div class="container my">
+    <div class="row">
+        <!-- Colonna sinistra: Lista dei prodotti -->
+        <h1 class="display-1 fw-semibold text-success">@Model.Product.Name</h1>
+
+        <div class="col-md-4">
+            <div class="list-group">
+                @foreach (var product in ViewBag.AllProducts as IEnumerable<Forno.Models.Product>)
+                {
+                    <a href="@Url.Action("Details", "Products", new { id = product.ProductID })" class="list-group-item list-group-item-action">
+                        @product.Name
+                    </a>
+                }
+            </div>
+        </div>
+
+        <!-- Colonna centrale: Dettagli del prodotto selezionato -->
+        <div class="col-md-4">
+            <div class="card mb-3">
+                @*<img src="@Model.Product.ImageUrl" class="card-img-top img-fluid details-img" alt="Immagine del prodotto">*@
+                <div class="card-body">
+                    <p class="card-text">Prezzo: @Model.Product.Price €</p>
+                    <p class="card-text">Tempo di consegna: @Model.Product.DeliveryTime</p>
+                    <h6>Ingredienti:</h6>
+                    <ul>
+                        @foreach (var ingredient in Model.Product.Ingredient)
+                        {
+                            <li>@ingredient.Name</li>
+                        }
+                    </ul>
+                    <div class="d-flex justify-content-between align-items-center">
+
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <button class="btn btn-sm btn-outline-success add-to-cart-btn" data-bs-toggle="modal" data-product-id="@Model.Product.ProductID" data-product-name="@Model.Product.Name">Personalizza</button>
+
+                        }
+                        else
+                        {
+                            @Html.ActionLink("Login", "Login", "Account", new { returnUrl = Request.Url.PathAndQuery }, new { @class = "btn btn-sm btn-outline-success" })
+                            @Html.ActionLink("Register", "Create", "AppUsers", new { returnUrl = Request.Url.PathAndQuery }, new { @class = "btn btn-sm btn-outline-success" })
+                        }
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            @Html.ActionLink("Edit", "Edit", new { id = Model.Product.ProductID }, new { @class = "btn btn-sm btn-outline-secondary" })
+                            @Html.ActionLink("Delete", "Delete", new { id = Model.Product.ProductID }, new { @class = "btn btn-sm btn-outline-danger" })
+                        }
+                        <a href="@Url.Action("Index", "Products")" class="btn btn-sm btn-outline-secondary">Back to List</a>
                     </div>
-                
                 </div>
+            </div>
+        </div>
+
+        <!-- Colonna destra: Contenuti aggiuntivi per l'utente -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header">
+                    Suggerimenti per te
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Prova la nuova pizza del mese!</li>
+                    <li class="list-group-item">Scopri gli sconti esclusivi</li>
+                    <li class="list-group-item">Iscriviti alla nostra newsletter</li>
+                </ul>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modale di personalizzazione -->
+<div class="modal fade" id="customizeProductModal" tabindex="-1" aria-labelledby="customizeProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="customizeProductModalLabel">Personalizza il prodotto</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- I contenuti vengono caricati qui via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+    <script>
+        function changeQuantity(change) {
+            var quantityInput = document.getElementById('quantity');
+            var currentQuantity = parseInt(quantityInput.value);
+            if (currentQuantity + change > 0) {
+                quantityInput.value = currentQuantity + change;
+            }
+        }
+    </script>
+}

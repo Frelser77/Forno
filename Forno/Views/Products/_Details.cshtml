@@ -2,43 +2,66 @@
 
 @{
     Layout = null;
+
+    <style>
+        .my-col {
+            height: 450px;
+            overflow-y: auto;
+        }
+    </style>
+
 }
 
 @using (Html.BeginForm("AddToCart", "Orderrs", FormMethod.Post, new { id = "add-to-cart-form", data_product_id = Model.Product.ProductID }))
 {
     @Html.AntiForgeryToken()
 
-    <div class="product-details">
-        <h3>@Model.Product.Name</h3>
-        <img src="@Model.Product.ImageUrl" alt="Product image" style="max-width: 100%;">
-        <p>Prezzo: @Model.Product.Price €</p>
-        <p>Tempo di consegna: @Model.Product.DeliveryTime giorni</p>
+    <div class="row">
+        <div class="col-md-6">
+            <img src="~/Content/Images/@Model.Product.ImageUrl" alt="Product image" class="img-fluid">
+        </div>
+        <div class="col-md-6">
+            <div class="product-details my-col">
+                <h3>@Model.Product.Name</h3>
+                <p>Prezzo: @Model.Product.Price €</p>
+                <p>Tempo di consegna: @Model.Product.DeliveryTime giorni</p>
 
-            @if (Model.Product.Ingredient != null && Model.Product.Ingredient.Any())
-            {
-                <h4>Ingredienti di default:</h4>
-                foreach (var ingredient in Model.Product.Ingredient)
+                @if (Model.Product.Ingredient != null && Model.Product.Ingredient.Any())
+                {
+                    <h4>Ingredienti di default:</h4>
+                    foreach (var ingredient in Model.Product.Ingredient)
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="selectedIngredients" value="@ingredient.IngredientID" checked id="default-ingredient-@ingredient.IngredientID">
+                            <label class="form-check-label" for="default-ingredient-@ingredient.IngredientID">
+                                @ingredient.Name
+                            </label>
+                        </div>
+                    }
+                }
+
+                <h4>Altri ingredienti disponibili:</h4>
+                @foreach (var ingredient in Model.AllIngredients)
                 {
                     <div class="form-check">
-                        <input class="form-check-input" type="checkbox" name="selectedIngredients" value="@ingredient.IngredientID" checked disabled id="default-ingredient-@ingredient.IngredientID">
-                        <label class="form-check-label" for="default-ingredient-@ingredient.IngredientID">
+                        <input class="form-check-input" type="checkbox" name="selectedIngredients" value="@ingredient.IngredientID" id="ingredient-@ingredient.IngredientID">
+                        <label class="form-check-label" for="ingredient-@ingredient.IngredientID">
                             @ingredient.Name
                         </label>
                     </div>
                 }
-            }
 
-            <h4>Altri ingredienti disponibili:</h4>
-            @foreach (var ingredient in Model.AllIngredients)
-            {
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" name="selectedIngredients" value="@ingredient.IngredientID" id="ingredient-@ingredient.IngredientID">
-                    <label class="form-check-label" for="ingredient-@ingredient.IngredientID">
-                        @ingredient.Name
-                    </label>
+                <div class="quantity my-3">
+                    <label for="quantity" class="form-label">Quantità:</label>
+                    <div class="input-group">
+                        <button type="button" class="btn btn-outline-secondary" onclick="changeQuantity(-1)">-</button>
+                        <input type="text" name="quantity" value="1" min="1" class="form-control text-center" id="quantity" style="width: 50px;" readonly>
+                        <button type="button" class="btn btn-outline-secondary" onclick="changeQuantity(1)">+</button>
+                    </div>
                 </div>
-            }
-            <input type="number" name="quantity" value="1" min="1" class="form-control" style="width: 80px; margin-top: 10px;" />
-            <button type="submit" class="btn btn-primary">Aggiungi al Carrello</button>
+
+                <button type="submit" class="btn btn-primary">Aggiungi al Carrello</button>
+            </div>
+        </div>
     </div>
 }

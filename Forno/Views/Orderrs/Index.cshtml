@@ -6,125 +6,57 @@
 
 <h2>Index</h2>
 
-<p>
-    @Html.ActionLink("Create New", "Create", null, new { @class = "btn btn-primary" })
-</p>
-
-@using (Html.BeginForm("ChangeStatus", "Orderrs", FormMethod.Post, new { id = "changeStatusForm" }))
+@if (ViewBag.ConfirmedOrders != null && ((IEnumerable<Forno.Models.Orderr>)ViewBag.ConfirmedOrders).Any())
 {
-    @Html.AntiForgeryToken()
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead class="thead-dark">
-                <tr>
-                    <th>
-                        @Html.DisplayNameFor(model => model.First().AppUser.Username)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.First().OrderDate)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.First().Status)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.First().TotalPrice)
-                    </th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
-                    <tr>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.AppUser.Username)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.OrderDate)
-                        </td>
-                        <td class="status-text">
-                            @Html.DisplayFor(modelItem => item.Status)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.TotalPrice)
-                        </td>
-                        <td>
-                            @Html.ActionLink("Details", "Details", new { id = item.OrderID }, new { @class = "btn btn-info btn-sm" })
-                            @if (User.IsInRole("Admin") || (User.Identity.IsAuthenticated && User.Identity.Name == item.AppUser.Username))
-                            {
-                                @Html.ActionLink("Edit", "Edit", new { id = item.OrderID }, new { @class = "btn btn-primary btn-sm" })
-                                @Html.ActionLink("Delete", "Delete", new { id = item.OrderID }, new { @class = "btn btn-danger btn-sm" })
-                            }
-
-
-                            @if (User.IsInRole("Admin"))
-                            {
-                                <button class="btn btn-warning btn-sm change-status"
-                                        data-id="@item.OrderID"
-                                        data-status="@item.Status">
-                                    Change Status
-                                </button>
-                            }
-
-                        </td>
-                    </tr>
-                }
-
-            </tbody>
-        </table>
-    </div>
+    <h3>Ordini Confermati</h3>
+    @RenderOrders((IEnumerable<Forno.Models.Orderr>)ViewBag.ConfirmedOrders, true)
 }
 
-@section Scripts {
-    @Scripts.Render("~/bundles/jqueryval")
+@if (ViewBag.ProcessedOrders != null && ((IEnumerable<Forno.Models.Orderr>)ViewBag.ProcessedOrders).Any())
+{
+    <h3>Ordini Evasi</h3>
+    @RenderOrders((IEnumerable<Forno.Models.Orderr>)ViewBag.ProcessedOrders, false)
+}
 
-<script type="text/javascript">
-        $(document).ready(function () {
-            $('.change-status').on('click', function () {
-                 var changeStatusUrl = '@Url.Action("ChangeStatus", "Orderrs")';
-                var button = $(this);
-                var orderId = button.data('id');
-                var currentStatus = button.data('status');
-                var nextStatus = getNextStatus(currentStatus);
-
-                // Debug: Stampa in console l'ID e lo stato attuale per assicurarti che non siano null
-                console.log('Order ID:', orderId, 'Current Status:', currentStatus);
-
-                // Verifica che orderId non sia null o undefined
-                if (orderId) {
-                    var data = {
-                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val(),
-                        id: orderId,
-                        newStatus: nextStatus
-                    };
-
-                    $.ajax({
-                        url: changeStatusUrl,
-                        type: 'POST',
-                        data: data,
-                        success: function (response) {
-                            button.data('status', nextStatus);
-                            button.closest('tr').find('.status-text').text(nextStatus);
-                        },
-                        error: function (xhr, status, error) {
-                            console.error(xhr.responseText);
-                            alert('Errore durante il cambiamento dello stato. Dettagli: ' + xhr.responseText);
+@helper RenderOrders(IEnumerable<Forno.Models.Orderr> orders, bool showChangeStatus)
+{
+    <table class="table table-hover">
+        <thead class="thead-dark">
+            <tr>
+                <th>Username</th>
+                <th>Order Date</th>
+                <th>Status</th>
+                <th>Total Price</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in orders)
+            {
+                <tr>
+                    <td>@item.AppUser.Username</td>
+                    <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                    <td>@item.Status</td>
+                    <td>@item.TotalPrice.ToString("C")</td>
+                    <td>
+                        @Html.ActionLink("Details", "Details", new { id = item.OrderID }, new { @class = "btn btn-info btn-sm" })
+                        @if (User.IsInRole("Admin"))
+                        {
+                            @Html.ActionLink("Delete", "Delete", new { id = item.OrderID }, new { @class = "btn btn-danger btn-sm" })
+                            if (showChangeStatus)
+                            {
+                                using (Html.BeginForm("ChangeStatus", "Orderrs", new { id = item.OrderID }, FormMethod.Post, new { @class = "form-inline" }))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.OrderID" />
+                                    <input type="hidden" name="newStatus" value="Evaso" />
+                                    <button type="submit" class="btn btn-warning btn-sm">Change Status</button>
+                                }
+                            }
                         }
-                    });
-                } else {
-                    console.error('Errore: Order ID è null o undefined.');
-                    alert('Errore: Il cambio di stato non può essere eseguito senza un ID ordine valido.');
-                }
-            });
-
-            function getNextStatus(currentStatus) {
-                switch (currentStatus) {
-                    case "In Lavorazione": return "In Consegna";
-                    case "In Consegna": return "Consegnato";
-                    default: return "In Lavorazione";
-                }
+                    </td>
+                </tr>
             }
-        });
-
-</script>
+        </tbody>
+    </table>
 }

@@ -4,7 +4,6 @@ namespace Forno.Models
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-    using System.Data.Entity.Spatial;
 
     [Table("Orderr")]
     public partial class Orderr
@@ -20,12 +19,16 @@ namespace Forno.Models
 
         public int AppUserID { get; set; }
 
+        [Display(Name = "Order Date")]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MM/yyyy HH:mm:ss}")]
         public DateTime OrderDate { get; set; }
 
         [Required]
         [StringLength(50)]
+        [Display(Name = "Order Status")]
         public string Status { get; set; }
 
+        [Display(Name = "Total Price")]
         public decimal TotalPrice { get; set; }
 
         public virtual AppUser AppUser { get; set; }

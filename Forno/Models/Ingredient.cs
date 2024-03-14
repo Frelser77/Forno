@@ -1,10 +1,8 @@
 namespace Forno.Models
 {
-    using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-    using System.Data.Entity.Spatial;
 
     [Table("Ingredient")]
     public partial class Ingredient
@@ -15,10 +13,12 @@ namespace Forno.Models
             Product = new HashSet<Product>();
         }
 
+        [Display(Name = "Ingredient identify")]
         public int IngredientID { get; set; }
 
         [Required]
         [StringLength(255)]
+        [Display(Name = "Ingredient Name")]
         public string Name { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]

@@ -184,6 +184,7 @@
     <Compile Include="Models\Orderr.cs" />
     <Compile Include="Models\Product.cs" />
     <Compile Include="Models\ProductDetailsViewModel .cs" />
+    <Compile Include="Models\TopProductViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -204,6 +205,8 @@
     <Content Include="Content\bootstrap.min.css" />
     <Content Include="Content\bootstrap.rtl.css" />
     <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\Images\banne1.jpg" />
+    <Content Include="Content\Images\banner2.jpg" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -275,6 +278,7 @@
     <Content Include="Views\Orderrs\GetCart.cshtml" />
     <Content Include="Views\Orderrs\OrderConfirmation.cshtml" />
     <Content Include="Views\Products\_Details.cshtml" />
+    <Content Include="Views\Orderrs\DailyReport.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

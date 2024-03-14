@@ -1,49 +1,36 @@
 ﻿@model Forno.Models.Product
 
 @{
-    ViewBag.Title = "Create";
-    Layout = "~/Views/Shared/_Layout.cshtml"; // Assicurati di usare il layout corretto
+    ViewBag.Title = "Create Product";
 }
 
 <h2>Create Product</h2>
 
-@using (Html.BeginForm("Create", "Products", FormMethod.Post, new { @class = "form-horizontal", role = "form" }))
+@using (Html.BeginForm("Create", "Products", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     @Html.AntiForgeryToken()
 
     <div class="form-group">
-        @Html.LabelFor(model => model.Name, new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
-        </div>
+        @Html.LabelFor(model => model.Name)
+        @Html.TextBoxFor(model => model.Name)
+        @Html.ValidationMessageFor(model => model.Name)
     </div>
 
-    <!-- Price -->
     <div class="form-group">
-        @Html.LabelFor(model => model.Price, new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.Price, new { htmlAttributes = new { @class = "form-control", type = "number", step = "0.1" } })
-            @Html.ValidationMessageFor(model => model.Price, "", new { @class = "text-danger" })
-        </div>
+        @Html.LabelFor(model => model.Price)
+        @Html.TextBoxFor(model => model.Price, new { @class = "form-control", type = "number", step="0.1" })
+        @Html.ValidationMessageFor(model => model.Price)
     </div>
 
-    <!-- Delivery Time -->
     <div class="form-group">
-        @Html.LabelFor(model => model.DeliveryTime, new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.DeliveryTime, new { htmlAttributes = new { @class = "form-control", type = "time", step = "600" } })
-            @Html.ValidationMessageFor(model => model.DeliveryTime, "", new { @class = "text-danger" })
-        </div>
+        @Html.LabelFor(model => model.DeliveryTime)
+        @Html.TextBoxFor(model => model.DeliveryTime, new { @class = "form-control", type = "time" , step="60" })
+        @Html.ValidationMessageFor(model => model.DeliveryTime)
     </div>
 
-    <!-- Image URL -->
     <div class="form-group">
-        @Html.LabelFor(model => model.ImageUrl, new { @class = "control-label col-md-2" })
-        <div class="col-md-10">
-            @Html.EditorFor(model => model.ImageUrl, new { htmlAttributes = new { @class = "form-control" } })
-            @Html.ValidationMessageFor(model => model.ImageUrl, "", new { @class = "text-danger" })
-        </div>
+        @Html.LabelFor(model => model.ImageUrl)
+        <input type="file" name="ImageUpload" />
     </div>
 
     <!--  Ingredients -->
@@ -74,6 +61,11 @@
         </div>
     </div>
 }
+
+
+<div>
+    @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-primary" })
+</div>
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")
