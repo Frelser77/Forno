@@ -1,0 +1,20 @@
+﻿.close {
+    background-color: #f2f2f2; 
+    border: none;
+    padding: 5px; 
+    border-radius: 50%; 
+    outline: none; 
+    transition: background-color 0.3s, color 0.3s; 
+}
+
+    .close .bx {
+        color: #333; /
+    }
+
+    .close:hover {
+        background-color: #e6e6e6;
+    }
+
+        .close:hover .bx {
+            color: #555;
+        }

@@ -1,71 +1,61 @@
 ﻿@model Forno.Models.Orderr
-
+@section css{
+    <link href="~/Content/css/details-order.css" rel="stylesheet" type="text/css" />
+}
 @{
     ViewBag.Title = "Details";
 }
 
 <h2>Details</h2>
 
-<div>
-    <h4>Orderr</h4>
-    <hr />
-    <dl class="dl-horizontal">
-        <dt>
-            @Html.DisplayNameFor(model => model.AppUser.Username)
-        </dt>
+<div class="my-container mt-4">
+    <div class="row mb-2">
+        <div class="col-sm-3 font-weight-bold">Username:</div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.AppUser.Username)</div>
+    </div>
 
-        <dd>
-            @Html.DisplayFor(model => model.AppUser.Username)
-        </dd>
+    <div class="row mb-2">
+        <div class="col-sm-3 font-weight-bold">Order Date:</div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.OrderDate)</div>
+    </div>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.OrderDate)
-        </dt>
+    <div class="row mb-2">
+        <div class="col-sm-3 font-weight-bold">Status:</div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.Status)</div>
+    </div>
 
-        <dd>
-            @Html.DisplayFor(model => model.OrderDate)
-        </dd>
+    <div class="row mb-2">
+        <div class="col-sm-3 font-weight-bold">Total Price:</div>
+        <div class="col-sm-9">@Html.DisplayFor(model => model.TotalPrice)</div>
+    </div>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-
-        <dd><!--class="status-text"-->
-            
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.TotalPrice)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.TotalPrice)
-        </dd>
-
-        <dt>
-            Products
-        </dt>
-        <dd>
-            <ul>
+    <div class="row mb-4">
+        <div class="col-sm-3 font-weight-bold">Products:</div>
+        <div class="col-sm-9">
+            <ul class="list-unstyled">
                 @foreach (var detail in Model.OrderDetail)
                 {
-                    <li>@detail.Product.Name - Qty: @detail.Quantity - Price: @detail.Product.Price</li>
+                    <li class="my-li">@detail.Product.Name - Qty: @detail.Quantity - Price: @detail.Product.Price</li>
                 }
             </ul>
-        </dd>
-    </dl>
+        </div>
+    </div>
+
     @if (User.IsInRole("Admin"))
     {
-        @Html.ActionLink("Delete", "Delete", new { id = Model.OrderID }, new { @class = "btn btn-danger btn-sm" })
+        <div class="row mb-2">
+            <div class="col">
+                @Html.ActionLink("Delete", "Delete", new { id = Model.OrderID }, new { @class = "btn btn-danger btn-sm" })
+            </div>
+        </div>
     }
+
+    <div class="row">
+        <div class="col">
+            @Html.ActionLink("Back to List", "Index", null, new { @class = "btn btn-secondary btn-sm" })
+        </div>
+    </div>
 </div>
-<p>
-    @Html.ActionLink("Back to List", "Index")
-</p>
-
-
-
 
 @section Scripts {
     @Scripts.Render("~/bundles/jqueryval")

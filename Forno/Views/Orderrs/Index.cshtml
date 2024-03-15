@@ -4,18 +4,31 @@
     ViewBag.Title = "Index";
 }
 
-<h2>Index</h2>
+<h2>You Orders</h2>
 
 @if (ViewBag.ConfirmedOrders != null && ((IEnumerable<Forno.Models.Orderr>)ViewBag.ConfirmedOrders).Any())
 {
     <h3>Ordini Confermati</h3>
-    @RenderOrders((IEnumerable<Forno.Models.Orderr>)ViewBag.ConfirmedOrders, true)
+    <div class="table-responsive">
+        @RenderOrders((IEnumerable<Forno.Models.Orderr>)ViewBag.ConfirmedOrders, true)
+    </div>
 }
 
 @if (ViewBag.ProcessedOrders != null && ((IEnumerable<Forno.Models.Orderr>)ViewBag.ProcessedOrders).Any())
 {
     <h3>Ordini Evasi</h3>
-    @RenderOrders((IEnumerable<Forno.Models.Orderr>)ViewBag.ProcessedOrders, false)
+    <div class="table-responsive">
+        @RenderOrders((IEnumerable<Forno.Models.Orderr>)ViewBag.ProcessedOrders, false)
+    </div>
+}
+
+@if ((ViewBag.ConfirmedOrders == null || !((IEnumerable<Forno.Models.Orderr>)ViewBag.ConfirmedOrders).Any()) && (ViewBag.ProcessedOrders == null || !((IEnumerable<Forno.Models.Orderr>)ViewBag.ProcessedOrders).Any()))
+{
+    <div class="d-flex justify-content-center">
+        <div class="alert alert-warning" role="alert" style="max-width: 500px;">
+            Your don't have any order. Start shopping now!
+        </div>
+    </div>
 }
 
 @helper RenderOrders(IEnumerable<Forno.Models.Orderr> orders, bool showChangeStatus)
@@ -36,7 +49,7 @@
                 <tr>
                     <td>@item.AppUser.Username</td>
                     <td>@item.OrderDate.ToString("dd/MM/yyyy HH:mm:ss")</td>
-                    <td>@item.Status</td>
+                    <td><div class="badge badge-warning">@item.Status</div></td>
                     <td>@item.TotalPrice.ToString("C")</td>
                     <td>
                         @Html.ActionLink("Details", "Details", new { id = item.OrderID }, new { @class = "btn btn-info btn-sm" })

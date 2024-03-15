@@ -1,5 +1,5 @@
 ﻿@model Forno.Models.ProductDetailsViewModel
-
+s
 @{
     ViewBag.Title = "Details";
 }
@@ -108,16 +108,3 @@
         </div>
     </div>
 </div>
-
-
-@section Scripts {
-    <script>
-        function changeQuantity(change) {
-            var quantityInput = document.getElementById('quantity');
-            var currentQuantity = parseInt(quantityInput.value);
-            if (currentQuantity + change > 0) {
-                quantityInput.value = currentQuantity + change;
-            }
-        }
-    </script>
-}

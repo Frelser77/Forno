@@ -1,4 +1,5 @@
 ﻿using Forno.Models;
+using System;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
@@ -11,12 +12,14 @@ namespace Forno.Controllers
         private ModelDbContext db = new ModelDbContext();
 
         // GET: AppUsers
+        [Authorize(Roles = "Admin")]
         public ActionResult Index()
         {
             return View(db.AppUser.ToList());
         }
 
         // GET: AppUsers/Details/5
+        [Authorize]
         public ActionResult Details(int? id)
         {
             if (id == null)
@@ -32,6 +35,7 @@ namespace Forno.Controllers
         }
 
         // GET: AppUsers/Create
+        [Authorize(Roles = "Admin")]
         public ActionResult Create()
         {
             return View();
@@ -42,6 +46,7 @@ namespace Forno.Controllers
         // Per altri dettagli, vedere https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public ActionResult Create([Bind(Include = "AppUserID,Username,Password,ShippingAddress,Note")] AppUser appUser)
         {
             ModelState.Remove("Role");
@@ -77,6 +82,7 @@ namespace Forno.Controllers
 
 
         // GET: AppUsers/Edit/5
+        [Authorize(Roles = "Utente,Admin")]
         public ActionResult Edit(int? id)
         {
             if (id == null)
@@ -96,6 +102,7 @@ namespace Forno.Controllers
         // Per altri dettagli, vedere https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Utente,Admin")]
         public ActionResult Edit([Bind(Include = "AppUserID,Username,Password,ShippingAddress,Note")] AppUser appUser)
         {
             if (ModelState.IsValid)
@@ -117,6 +124,7 @@ namespace Forno.Controllers
         }
 
         // GET: AppUsers/Delete/5
+        [Authorize(Roles = "Utente,Admin")]
         public ActionResult Delete(int? id)
         {
             if (id == null)
@@ -134,11 +142,45 @@ namespace Forno.Controllers
         // POST: AppUsers/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Utente,Admin")]
         public ActionResult DeleteConfirmed(int id)
         {
             AppUser appUser = db.AppUser.Find(id);
             db.AppUser.Remove(appUser);
             db.SaveChanges();
+            return RedirectToAction("Index");
+        }
+
+        // POST: AppUsers/ChangeRole/5
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public ActionResult ChangeRole(int? id)
+        {
+            if (id == null)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+
+            AppUser appUser = db.AppUser.Find(id);
+            if (appUser == null)
+            {
+                return HttpNotFound();
+            }
+
+            // Cambio del ruolo
+            if (appUser.Role.Equals("Utente", StringComparison.InvariantCultureIgnoreCase))
+            {
+                appUser.Role = "Admin";
+            }
+            else if (appUser.Role.Equals("Admin", StringComparison.InvariantCultureIgnoreCase))
+            {
+                appUser.Role = "Utente";
+            }
+
+            db.Entry(appUser).State = EntityState.Modified;
+            db.SaveChanges();
+
             return RedirectToAction("Index");
         }
 

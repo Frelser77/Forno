@@ -8,7 +8,10 @@
     <!-- Bootstrap CSS 5.3.2 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.2/css/bootstrap.min.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/boxicons/2.1.0/css/boxicons.min.css" rel="stylesheet">
     @Styles.Render("~/Content/css")
+    <link href="~/Content/css/Table.css" rel="stylesheet" type="text/css" />
+    @RenderSection("css", required: false)
 </head>
 <body class="poistion-relative">
 
@@ -31,12 +34,12 @@
                     {
 
                         <li>
-                            <a href="@Url.Action("GetCart", "Orderrs")" class="nav-link">Carrello <span id="cart-item-count">0</span></a>
+                            <a href="@Url.Action("GetCart", "Orderrs")" class="nav-link">Cart <span id="cart-item-count">0</span></a>
                         </li>
 
                         <li class="nav-item dropdown">
                             <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                Benvenuto @User.Identity.Name
+                                Hy @User.Identity.Name
                             </a>
 
                             <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
@@ -51,8 +54,8 @@
                                     }
                                 }
 
-                                <a class="dropdown-item" href="@Url.Action("Details", "AppUsers", new { id = userId })">Profilo</a>
-                                <a class="dropdown-item" href="@Url.Action("Index", "Orderrs")">I Miei Ordini</a>
+                                <a class="dropdown-item" href="@Url.Action("Details", "AppUsers", new { id = userId })">Profile</a>
+                                <a class="dropdown-item" href="@Url.Action("Index", "Orderrs")">My Order</a>
 
 
                                 <a class="dropdown-item" href="@Url.Action("Logout", "Account")">Logout</a>
@@ -60,8 +63,9 @@
                                 @if (User.IsInRole("Admin"))
                                 {
                                     <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="@Url.Action("Index", "Orderrs")">Ordini</a>
-                                    <a class="dropdown-item" href="@Url.Action("Index", "Ingredients")">Ingredienti</a>
+                                    <a class="dropdown-item" href="@Url.Action("Index", "Orderrs")">Orders</a>
+                                    <a class="dropdown-item" href="@Url.Action("Index", "AppUsers")">Users</a>
+                                    <a class="dropdown-item" href="@Url.Action("Index", "Ingredients")">Ingredients</a>
                                 }
 
                             </div>
@@ -86,7 +90,7 @@
         @RenderBody()
 
     </div>
-    <footer class="footer mt-auto py-3 bg-dark mt-2">
+    <footer class="footer py-3 bg-dark mt-2 sticky-bottom">
         <div class="container">
             <span class="text-muted">&copy; @DateTime.Now.Year - Forno</span>
         </div>
@@ -183,7 +187,7 @@
                 button.addEventListener('click', function (event) {
                     event.preventDefault();
                     var productId = this.getAttribute('data-product-id');
-                    document.querySelector(customizeModalSelector + ' .modal-title').textContent = 'Personalizza ' + this.getAttribute('data-product-name');
+                    document.querySelector(customizeModalSelector + ' .modal-title').textContent = 'Customize ' + this.getAttribute('data-product-name');
 
                     fetch('/Products/Details/' + productId, {
                         headers: { 'X-Requested-With': 'XMLHttpRequest' }
@@ -202,6 +206,14 @@
                 });
             });
         });
+
+        function changeQuantity(change) {
+            var quantityInput = document.getElementById('quantity');
+            var currentQuantity = parseInt(quantityInput.value);
+            if (currentQuantity + change > 0) {
+                quantityInput.value = currentQuantity + change;
+            }
+        }
 
         function showToastSuccess(message) {
             toastr.success(message);

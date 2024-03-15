@@ -1,37 +1,86 @@
 ﻿@using Forno.Models
+@section css{
+    <link href="~/Content/css/DailyReport.css" rel="stylesheet" type="text/css" />
+}
 @{
     ViewBag.Title = "Daily Report";
     var topProducts = ViewBag.TopProducts as List<TopProductViewModel>;
-
 }
 
-<h2>Daily Report</h2>
+<div class="row justify-content-center">
+    <div class="col-auto d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+        <div class="card my-card-daily">
+            <div class="header">
+                <div class="div_image_v">
+                    <div class="image">
+                        <!-- Immagine, se necessaria -->
+                    </div>
+                </div>
+                <div class="my-content card-body">
+                    <h3 class="title mb-4">Daily Report</h3>
+                    <p class="message">Select a date to get the report.</p>
+                    <div class="form-group">
+                        <label for="reportDate">Select Date:</label>
+                        <input type="date" id="reportDate" class="form-control" />
+                    </div>
+                    <button id="getReport" class="btn btn-primary">Get Report</button>
+                </div>
+            </div>
+            <div id="reportResults" class="my-content">
+                <!-- I risultati del report verranno visualizzati qui -->
+            </div>
+        </div>
+    </div>
 
-<div class="form-group">
-    <label for="reportDate">Select Date:</label>
-    <input type="date" id="reportDate" class="form-control" />
+
+    <div class="col">
+        <div class="ms-5">
+            <h3 class="my-title">Report Totals</h3>
+            <div class="card-container">
+                <div class="mini-card item--1">
+                    <i class='bx bxs-user'></i>
+                    <p class="quantity">@ViewBag.TotalUsers</p>
+                    <p class="text text--1">Total Users</p>
+                </div>
+
+
+                <div class="mini-card item--2">
+                    <i class='bx bxs-package'></i>
+                    <p class="quantity">@ViewBag.TotalOrders</p>
+                    <p class="text text--2">Orders</p>
+                </div>
+
+
+
+
+                <div class="mini-card item--3">
+                    <i class='bx bxs-store'></i>
+                    <p class="quantity">@ViewBag.TotalProducts</p>
+                    <p class="text text--3">Products</p>
+                </div>
+
+                <div class="mini-card item--4">
+                    <i class='bx bxs-wallet'></i>
+                    <p class="quantity">€@ViewBag.TotalRevenue</p>
+                    <p class="text text--4">Total Revenue</p>
+                </div>
+            </div>
+
+            <h3 class="my-title">Top Selling Products</h3>
+            <div class="card-container">
+                @foreach (var product in topProducts)
+                {
+                    <div class="mini-card item--5">
+                        <i class='bx bxs-star'></i>
+                        <p class="quantity">@product.Count</p>
+                        <p class="text text--5">@product.Name</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
 </div>
 
-<button id="getReport" class="btn btn-primary">Get Report</button>
-
-<div id="reportResults">
-    <!-- I risultati del report verranno visualizzati qui -->
-</div>
-
-
-<div>
-    <h3>Report Totals</h3>
-    <p>Total Users: @ViewBag.TotalUsers</p>
-    <p>Total Orders: @ViewBag.TotalOrders</p>
-    <p>Total Products: @ViewBag.TotalProducts</p>
-    <p>Total Revenue: €@ViewBag.TotalRevenue</p>
-
-    <h3>Top Selling Products</h3>
-    @foreach (var product in ViewBag.TopProducts as List<Forno.Models.TopProductViewModel>)
-    {
-        <p>Product Name: @product.Name - Count: @product.Count</p>
-    }
-</div>
 
 @section Scripts {
     <script>

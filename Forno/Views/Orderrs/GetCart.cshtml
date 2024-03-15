@@ -8,43 +8,48 @@
 
 @if (Model != null && Model.Any())
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Prodotto</th>
-                <th>Quantità</th>
-                <th>Azioni</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+    <div class="table-responsive">
+        <!-- Aggiunta classe per rendere la tabella responsive -->
+        <table class="table table-striped">
+            <!-- Aggiunta classe per alternare lo stile delle righe -->
+            <thead class="thead-dark">
                 <tr>
-                    <td>@item.ProductName</td>
-                    <td>@item.Quantity</td>
-                    <td>
-                        @using (Html.BeginForm("IncreaseProductQuantity", "Orderrs", new { orderDetailId = item.OrderDetailID }, FormMethod.Post))
-                        {
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-info btn-sm">+</button>
-                        }
-                        @using (Html.BeginForm("DecreaseProductQuantity", "Orderrs", new { orderDetailId = item.OrderDetailID }, FormMethod.Post))
-                        {
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-info btn-sm">-</button>
-                        }
-                        @using (Html.BeginForm("RemoveFromCart", "Orderrs", new { orderDetailId = item.OrderDetailID }, FormMethod.Post))
-                        {
-                            @Html.AntiForgeryToken()
-                            <button type="submit" class="btn btn-danger btn-sm">Rimuovi</button>
-                        }
-                    </td>
+                    <th>Prodotto</th>
+                    <th>Quantità</th>
+                    <th></th>
                 </tr>
-            }
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.ProductName</td>
+                        <td>@item.Quantity</td>
+                        <td>
+                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                @using (Html.BeginForm("IncreaseProductQuantity", "Orderrs", new { orderDetailId = item.OrderDetailID }, FormMethod.Post))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-info btn-sm">+</button>
+                                }
+                                @using (Html.BeginForm("DecreaseProductQuantity", "Orderrs", new { orderDetailId = item.OrderDetailID }, FormMethod.Post))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-info btn-sm">-</button>
+                                }
+                                @using (Html.BeginForm("RemoveFromCart", "Orderrs", new { orderDetailId = item.OrderDetailID }, FormMethod.Post))
+                                {
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-danger btn-sm">Rimuovi</button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
 
-        </tbody>
-    </table>
-
+            </tbody>
+        </table>
+    </div>
     using (Html.BeginForm("EmptyCart", "Orderrs", FormMethod.Post))
     {
         @Html.AntiForgeryToken()
@@ -60,7 +65,11 @@
 }
 else
 {
-    <p>Il tuo carrello è vuoto.</p>
+    <div class="d-flex justify-content-center">
+        <div class="alert alert-warning" role="alert" style="max-width: 500px;">
+            Your cart is empty. Start shopping now!
+        </div>
+    </div>
 }
 
 

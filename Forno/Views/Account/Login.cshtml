@@ -1,27 +1,103 @@
 ﻿@model Forno.Models.MyLogin
-
+@section css{
+    <link href="~/Content/css/Login.css" rel="stylesheet" type="text/css" />
+}
 @{
     ViewBag.Title = "Login";
 }
 
-<h2>Login</h2>
+<main>
+    @using (Html.BeginForm("Login", "Account", FormMethod.Post, new { @class = "login-box" }))
+    {
+        @Html.AntiForgeryToken()
+
+        <h3 class="m-0 p-0">Login</h3>
+
+        <div class="input_box">
+            @Html.TextBoxFor(m => m.Username, new { @class = "input-field", type = "text", id = "user", required = "required" })
+            <label for="user" class="label">Username</label>
+            <i class="bx bx-user icon"></i>
+            @Html.ValidationMessageFor(m => m.Username)
+        </div>
+
+        <div class="input_box">
+            @Html.PasswordFor(m => m.Password, new { @class = "input-field", id = "pass", required = "required" })
+            <label for="pass" class="label">Password</label>
+            <i class="bx bx-lock-alt icon"></i>
+            @Html.ValidationMessageFor(m => m.Password)
+        </div>
+
+        <div class="forgot">
+            @Html.ActionLink("Forgot password?", "ForgotPassword", "Account")
+        </div>
+
+        <div class="input_box">
+            <input type="submit" class="input-submit" value="Login">
+        </div>
+
+        <div class="register">
+            <span>Don't have an account? @Html.ActionLink("Register", "Create", "AppUsers")</span>
+        </div>
+    }
 
 
-@using (Html.BeginForm("Login", "Account", FormMethod.Post))
-{
-    @Html.AntiForgeryToken()
-
-    <div class="form-group">
-        @Html.LabelFor(m => m.Username)
-        @Html.TextBoxFor(m => m.Username, new { @class = "form-control" })
-        @Html.ValidationMessageFor(m => m.Username)
+    @*   LOADIN   *@
+    <div class="hourglassBackground">
+        <div class="hourglassContainer">
+            <div class="hourglassCurves"></div>
+            <div class="hourglassCapTop"></div>
+            <div class="hourglassGlassTop"></div>
+            <div class="hourglassSand"></div>
+            <div class="hourglassSandStream"></div>
+            <div class="hourglassCapBottom"></div>
+            <div class="hourglassGlass"></div>
+        </div>
     </div>
 
-    <div class="form-group">
-        @Html.LabelFor(m => m.Password)
-        @Html.PasswordFor(m => m.Password, new { @class = "form-control", type = "password" })
-        @Html.ValidationMessageFor(m => m.Password)
-    </div>
+</main>
 
-    <button type="submit" class="btn btn-default">Login</button>
+@section Scripts{
+    @Scripts.Render("~/bundles/jqueryval")
+    <script type="text/javascript">
+        $(document).ready(function () {
+            // Nasconde il loader all'avvio della pagina
+            $(".hourglassBackground").hide();
+
+            // Gestione del submit del form
+            $(".login-box").submit(function (event) {
+                event.preventDefault(); // Previeni il submit normale del form
+
+                // Mostra il loader e nasconde il form
+                $(".hourglassBackground").show();
+                $(this).hide(); // Nasconde il form di login
+
+                var data = $(this).serialize(); // Serializza i dati del form
+
+                $.ajax({
+                    type: $(this).attr('method'),
+                    url: $(this).attr('action'),
+                    data: data,
+                    success: function (response) {
+                        // La gestione qui rimane invariata
+                        if (response.success) {
+                            window.location.href = response.redirectUrl;
+                        } else {
+                            // Nascondi il loader e mostra il form di nuovo con un messaggio di errore
+                            $(".hourglassBackground").hide();
+                            $(".login-box").show();
+                            alert(response.errorMessage);
+                        }
+                    },
+                    error: function () {
+                        // Gestisci l'errore, nascondi il loader e mostra il form
+                        $(".hourglassBackground").hide();
+                        $(".login-box").show();
+                        alert("Errore nella richiesta AJAX.");
+                    }
+                });
+            });
+        });
+
+
+    </script>
 }

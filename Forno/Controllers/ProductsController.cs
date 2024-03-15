@@ -15,6 +15,7 @@ namespace Forno.Controllers
         private readonly ModelDbContext db = new ModelDbContext();
 
         // GET: Products
+        [Authorize]
         public ActionResult Index(string searchString)
         {
             var products = from p in db.Product
@@ -30,6 +31,7 @@ namespace Forno.Controllers
         }
 
         // GET: Products/Details/5
+        [Authorize]
         public ActionResult Details(int? id)
         {
             if (id == null)
@@ -62,6 +64,7 @@ namespace Forno.Controllers
 
 
         // GET: Products/Create
+        [Authorize(Roles = "Admin")]
         public ActionResult Create()
         {
             ViewBag.IngredientID = new MultiSelectList(db.Ingredient.ToList(), "IngredientID", "Name");
@@ -71,6 +74,7 @@ namespace Forno.Controllers
         // POST: Products/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public ActionResult Create([Bind(Include = "Name,Price,DeliveryTime,SelectedIngredientIDs,ImageUrl")] Product product, HttpPostedFileBase ImageUpload)
         {
             if (ModelState.IsValid)
@@ -105,6 +109,7 @@ namespace Forno.Controllers
         }
 
         // GET: Products/Edit/5
+        [Authorize(Roles = "Admin")]
         public ActionResult Edit(int? id)
         {
             if (id == null)
@@ -131,6 +136,7 @@ namespace Forno.Controllers
         // Per altri dettagli, vedere https://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public ActionResult Edit(Product productToUpdate, HttpPostedFileBase ImageUpload, int[] SelectedIngredientIDs)
         {
             if (ModelState.IsValid)
@@ -185,6 +191,7 @@ namespace Forno.Controllers
         }
 
         // GET: Products/Delete
+        [Authorize(Roles = "Admin")]
         public ActionResult Delete(int? id)
         {
             if (id == null)
@@ -203,6 +210,7 @@ namespace Forno.Controllers
         // POST: Products/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
         public ActionResult DeleteConfirmed(int id)
         {
             Product product = db.Product.Include(p => p.Ingredient).FirstOrDefault(p => p.ProductID == id);

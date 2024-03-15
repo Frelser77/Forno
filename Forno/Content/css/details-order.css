@@ -1,0 +1,32 @@
+﻿body {
+    background: #f7f7f7; /* Colore di sfondo leggero per l'intero body */
+}
+
+.my-container {
+    background: #ffffff; /* Sfondo bianco per il contenitore principale */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Leggera ombreggiatura per dare profondità */
+    border-radius: 8px; /* Angoli arrotondati per il contenitore */
+    padding: 20px; /* Spazio all'interno del contenitore */
+    margin-top: 30px; /* Distanza dal top della pagina */
+}
+
+.font-weight-bold {
+    color: #333333; /* Colore scuro per i titoli */
+}
+
+.row {
+    margin-bottom: 15px; /* Spazio tra le righe */
+}
+
+ul.list-unstyled {
+    padding-left: 0; /* Rimuove il padding predefinito */
+    list-style-type: none; /* Nasconde i bullet points */
+}
+
+.my-li {
+    background: #f8f8f8; /* Sfondo per ogni elemento dell'elenco */
+    margin-bottom: 5px; /* Spazio tra gli elementi dell'elenco */
+    padding: 10px; /* Spazio all'interno degli elementi dell'elenco */
+    border-radius: 4px; /* Angoli arrotondati per gli elementi dell'elenco */
+}
+

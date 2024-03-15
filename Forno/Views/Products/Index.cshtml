@@ -1,30 +1,9 @@
 ﻿@model IEnumerable<Forno.Models.Product>
-
+@section css{
+    <link href="~/Content/css/Index-Products.css" rel="stylesheet" type="text/css" />
+}
 @{
     ViewBag.Title = "Index";
-
-    <style>
-        body {
-            background-image: url(/Content/Images/banner2.jpg);
-            background-position: center;
-            background-repeat: no-repeat;
-            background-size: cover;
-            height: calc(100vh - 40px);
-            margin: 0;
-            overflow-y: hidden;
-        }
-
-        .product-container {
-            max-height: 65vh; /* Prende il 90% dell'altezza della viewport */
-            overflow-y: auto; /* Mostra la scrollbar se il contenuto supera l'altezza del contenitore */
-            overflow-x: hidden; 
-        }
-
-            /* Modifica l'aspetto della scrollbar */
-            .product-container::-webkit-scrollbar {
-                width: 0; /* Larghezza della scrollbar */
-            }
-    </style>
 }
 
 <h2>The Forno</h2>
@@ -36,20 +15,13 @@
     </p>
 }
 
-<!-- Aggiunta di un banner pubblicitario -->
-<div id="ad-banner" class="banner">
-    @*<img src="~/Content/Images/banner2.jpg" alt="banner2" />*@
-</div>
-
-<!-- Aggiunta di una barra di ricerca per le pizze -->
 <div id="search-bar" class="search-bar">
     @using (Html.BeginForm("Index", "Products", FormMethod.Get))
     {
-        <input type="text" name="searchString" class="form-control mb-2" placeholder="Search forn name or ingredient" />
+        <input type="text" name="searchString" class="form-control mb-2" placeholder="Search for name or ingredient" />
         <button type="submit" class="btn btn-primary">Search</button>
     }
 </div>
-
 
 <div class="product-container my-3">
     @using (Html.BeginForm())
@@ -59,31 +31,50 @@
             @foreach (var item in Model)
             {
                 <div class="col-md-4 g-4">
-                    <div class="card mb-4 shadow-sm h-100">
-                        <img class="card-img-top p-1" src="~/Content/Images/@item.ImageUrl" alt="Product image" style="object-fit:cover; height:250px;">
-                        <div class="card-body">
-                            <h5 class="card-title">@Html.DisplayFor(modelItem => item.Name)</h5>
-                            <p class="card-text">@Html.DisplayFor(modelItem => item.Price) €</p>
-                            <p class="card-text">Delivery time: @Html.DisplayFor(modelItem => item.DeliveryTime)</p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="btn-group">
-                                    @Html.ActionLink("Details", "Details", new { id = item.ProductID }, new { @class = "btn btn-sm btn-outline-secondary" })
-                                    @if (User.IsInRole("Admin"))
-                                    {
-                                        @Html.ActionLink("Edit", "Edit", new { id = item.ProductID }, new { @class = "btn btn-sm btn-outline-secondary" })
-                                        @Html.ActionLink("Delete", "Delete", new { id = item.ProductID }, new { @class = "btn btn-sm btn-outline-danger" })
-                                    }
+                    <div class="card bg-transparent">
 
-                                    @if (User.Identity.IsAuthenticated)
-                                    {
-                                        <button class="btn btn-sm btn-outline-success add-to-cart-btn" data-bs-toggle="modal" data-product-id="@item.ProductID" data-product-name="@item.Name">Add to Cart</button>
-                                    }
-                                    else
-                                    {
-                                        @Html.ActionLink("Login", "Login", "Account", new { returnUrl = Request.Url.PathAndQuery }, new { @class = "btn btn-sm btn-outline-success" })
-                                        @Html.ActionLink("Register", "Create", "AppUsers", new { returnUrl = Request.Url.PathAndQuery }, new { @class = "btn btn-sm btn-outline-success" })
-                                        <span class="alert-danger">Please login to add to cart</span>
-                                    }
+                        <div class="content">
+                            <div class="back">
+                                <div class="back-content">
+                                    <img src="@Url.Content("~/Content/Images/" + item.ImageUrl)" alt="Product image" style="width: 100%; height: auto;">
+                                    @*<strong>@item.Name</strong>*@
+                                </div>
+                            </div>
+                            <div class="front">
+                                <span class="badge badge-warning"> &nbsp; @item.Price €</span>
+                                <div class="img">
+                                    <!-- Additional Content If Needed -->
+                                </div>
+                                <div class="front-content">
+                                    <small class="badge">Pizza</small>
+                                    <div class="description">
+                                        <div class="my-title">
+                                            <strong>@item.Name</strong>
+                                        </div>
+                                        <p class="card-footer fs-6">
+                                            Delivery time: @item.DeliveryTime min &nbsp; |
+                                        </p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div class="btn-group">
+                                                @Html.ActionLink("Details", "Details", new { id = item.ProductID }, new { @class = "btn btn-sm btn-outline-secondary" })
+                                                @if (User.Identity.IsAuthenticated)
+                                                {
+                                                    <button class="btn btn-sm btn-outline-success add-to-cart-btn" data-bs-toggle="modal" data-product-id="@item.ProductID" data-product-name="@item.Name">Add to Cart</button>
+                                                }
+                                                else
+                                                {
+                                                    @Html.ActionLink("Login", "Login", "Account", new { returnUrl = Request.Url.PathAndQuery }, new { @class = "btn btn-sm btn-outline-success" })
+                                                    @Html.ActionLink("Register", "Create", "AppUsers", new { returnUrl = Request.Url.PathAndQuery }, new { @class = "btn btn-sm btn-outline-success" })
+                                                }
+
+                                                @if (User.IsInRole("Admin"))
+                                                {
+                                                    @Html.ActionLink("Edit", "Edit", new { id = item.ProductID }, new { @class = "btn btn-sm btn-outline-secondary" })
+                                                    @Html.ActionLink("Delete", "Delete", new { id = item.ProductID }, new { @class = "btn btn-sm btn-outline-danger" })
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -91,26 +82,27 @@
                 </div>
             }
         </div>
-
     }
-    </div>
-    <!-- Modale di personalizzazione -->
-    <div class="modal fade" id="customizeProductModal" tabindex="-1" aria-labelledby="customizeProductModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg my-modal">
-            <div class="modal-content my-modal">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="customizeProductModalLabel">Personalizza il prodotto</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <!-- I contenuti vengono caricati qui via AJAX -->
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
-                </div>
+</div>
+
+<!-- Modale di personalizzazione -->
+<div class="modal fade" id="customizeProductModal" tabindex="-1" aria-labelledby="customizeProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg my-modal">
+        <div class="modal-content my-modal">
+            <div class="modal-header">
+                <h5 class="modal-title" id="customizeProductModalLabel">Customize</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close" style="background-color: #f2f2f2;">
+                    <i class='bx bx-x' style="color: #333;"></i>
+                </button>
+
+            </div>
+            <div class="modal-body">
+                <!-- I contenuti vengono caricati qui via AJAX -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
+</div>
 

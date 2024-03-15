@@ -1,0 +1,232 @@
+﻿body{
+    background-image: url(/Content/Images/banne1.jpg);
+    overflow-y: hidden;
+}
+
+.card.my-card-daily {
+    overflow: hidden;
+    position: relative;
+    text-align: left;
+    border-radius: 0.5rem;
+    max-width: 280px;
+    background-color: #fff;
+    height:auto;
+    border:none;
+}
+
+.bx{
+    font-size:2.5rem;
+}
+
+.div_image_v {
+    background: #c56838;
+    border-bottom: none;
+    position: relative;
+    text-align: center;
+    margin: -20px -20px 0;
+    border-radius: 5px 5px 0 0;
+    padding: 35px;
+}
+
+
+.dismiss {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    background-color: #fff;
+    color: black;
+    border: 2px solid #D1D5DB;
+    font-size: 1rem;
+    font-weight: 300;
+    width: 30px;
+    height: 30px;
+    border-radius: 7px;
+    transition: .3s ease;
+}
+
+    .dismiss:hover {
+        background-color: #ee0d0d;
+        border: 2px solid #ee0d0d;
+        color: #fff;
+    }
+
+.header {
+    padding: 1.25rem 1rem 1rem 1rem;
+}
+
+.image {
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #e2feee;
+    flex-shrink: 0;
+    justify-content: center;
+    align-items: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 9999px;
+    animation: animate .6s linear alternate-reverse infinite;
+    transition: .6s ease;
+}
+
+    .image svg {
+        color: #0afa2a;
+        width: 2rem;
+        height: 2rem;
+    }
+
+.my-content {
+    margin-top: 0.75rem;
+    text-align: center;
+}
+
+.title {
+    color: #c56838;
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.5rem;
+}
+
+.message {
+    margin-top: 0.5rem;
+    color: #595b5f;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+@keyframes animate {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.09);
+    }
+}
+
+.card-container {
+    display: flex;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    width: 190px;
+}
+.mini-card {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-shadow: var(--shadow);
+    /*width: 190px;*/
+    width: 100%;
+    min-height: 254px; /* Ho cambiato in min-height per permettere più testo */
+    margin-bottom: 1rem;
+    background-color: white;
+    color: black; /* Cambiato per leggibilità su sfondo chiaro */
+}
+
+
+    /* Stili specifici per ogni mini-card */
+    .mini-card.item--1 {
+        background: #c7c7ff;
+    }
+
+    .mini-card.item--2 {
+        background: #ffd8be;
+    }
+
+    .mini-card.item--3 {
+        background: #a9ecbf;
+    }
+
+    .mini-card.item--4 {
+        background: #f3bbe1;
+    }
+
+    .mini-card.item--5 {
+        background: #f0e6c8;
+    }
+
+    .mini-card i, .mini-card svg {
+        width: 40px;
+        height: 40px;
+        margin-bottom: 7px;
+    }
+
+    /* Stili per la quantità */
+    .mini-card .quantity {
+        font-size: 25px;
+        font-weight: 600;
+    }
+
+    /* Stili per il testo descrittivo */
+    .mini-card .text {
+        font-family: inherit;
+        font-weight: 600;
+        font-size: 1.6rem;
+    }
+
+    /* Stili per i colori del testo */
+    .mini-card .text--1 {
+        color: rgba(149,149,255,1);
+    }
+
+    .mini-card .text--2 {
+        color: rgba(252,161,71,1);
+    }
+
+    .mini-card .text--3 {
+        color: rgba(66,193,110,1);
+    }
+
+    .mini-card .text--4 {
+        color: rgba(220,91,183,1);
+    }
+
+    .mini-card .text--5 {
+        color: rgba(246,185,0,1);
+    }
+
+.my-title {
+    color: rgb(255 97 0);
+    font-size: 4rem;
+    text-shadow: 3px 3px black;
+}
+
+/* Modifica l'aspetto della scrollbar complessivo */
+.card-container::-webkit-scrollbar {
+    height: 30px; /* Altezza della scrollbar orizzontale */
+    background-color: #F5F5F5; /* Colore dello sfondo della scrollbar */
+    border-radius: 20px; /* Angoli arrotondati */
+}
+
+/* Modifica lo sfondo della track della scrollbar */
+.card-container::-webkit-scrollbar-track {
+    background-color: #F5F5F5; /* Colore dello sfondo della track */
+    border-radius: 20px; /* Angoli arrotondati */
+}
+
+/* Modifica l'aspetto del thumb della scrollbar */
+.card-container::-webkit-scrollbar-thumb {
+    background-color: #888; /* Colore del thumb */
+    border-radius: 20px; /* Angoli arrotondati */
+    border: 2px solid #F5F5F5; /* Bordo attorno al thumb con lo stesso colore dello sfondo per "nasconderlo" */
+}
+
+    .card-container::-webkit-scrollbar-thumb:hover {
+        background-color: #555; /* Colore del thumb al passaggio del mouse */
+        cursor: grab; /* Cambia il cursore a mano aperta quando il mouse è sopra il thumb */
+    }
+
+    .card-container::-webkit-scrollbar-thumb:active {
+        cursor: grabbing; /* Cambia il cursore a mano chiusa quando il thumb è premuto */
+    }

@@ -1,5 +1,32 @@
 ﻿@model Forno.Models.ProductDetailsViewModel
+@section css{
+    <link href="~/Content/css/details-product.css" rel="stylesheet" type="text/css" />
+}
 
+<style>
+    .close {
+        background-color: #f2f2f2;
+        border: none;
+        padding: 5px;
+        border-radius: 50%;
+        outline: none;
+        transition: background-color 0.3s, color 0.3s;
+    }
+
+        .close .bx {
+            color: #333;
+            /
+        }
+
+        .close:hover {
+            background-color: #e6e6e6;
+        }
+
+            .close:hover .bx {
+                color: #555;
+            }
+
+</style>
 @{
     Layout = null;
 
@@ -19,16 +46,26 @@
     <div class="row">
         <div class="col-md-6">
             <img src="~/Content/Images/@Model.Product.ImageUrl" alt="Product image" class="img-fluid">
+            <div class="quantity my-3">
+                <label for="quantity" class="form-label">Quantiy:</label>
+                <div class="input-group">
+                    <button type="button" class="btn btn-outline-secondary" onclick="changeQuantity(-1)">-</button>
+                    <input type="text" name="quantity" value="1" min="1" class="form-control text-center" id="quantity" style="width: 50px;" readonly>
+                    <button type="button" class="btn btn-outline-secondary" onclick="changeQuantity(1)">+</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Add to Cart</button>
         </div>
         <div class="col-md-6">
             <div class="product-details my-col">
                 <h3>@Model.Product.Name</h3>
-                <p>Prezzo: @Model.Product.Price €</p>
-                <p>Tempo di consegna: @Model.Product.DeliveryTime giorni</p>
+                <p>Price: @Model.Product.Price €</p>
+                <p>Delivery time: @Model.Product.DeliveryTime giorni</p>
 
                 @if (Model.Product.Ingredient != null && Model.Product.Ingredient.Any())
                 {
-                    <h4>Ingredienti di default:</h4>
+                    <h4>Ingredients:</h4>
                     foreach (var ingredient in Model.Product.Ingredient)
                     {
                         <div class="form-check">
@@ -40,7 +77,7 @@
                     }
                 }
 
-                <h4>Altri ingredienti disponibili:</h4>
+                <h4>Available Ingredients:</h4>
                 @foreach (var ingredient in Model.AllIngredients)
                 {
                     <div class="form-check">
@@ -50,17 +87,6 @@
                         </label>
                     </div>
                 }
-
-                <div class="quantity my-3">
-                    <label for="quantity" class="form-label">Quantità:</label>
-                    <div class="input-group">
-                        <button type="button" class="btn btn-outline-secondary" onclick="changeQuantity(-1)">-</button>
-                        <input type="text" name="quantity" value="1" min="1" class="form-control text-center" id="quantity" style="width: 50px;" readonly>
-                        <button type="button" class="btn btn-outline-secondary" onclick="changeQuantity(1)">+</button>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary">Aggiungi al Carrello</button>
             </div>
         </div>
     </div>

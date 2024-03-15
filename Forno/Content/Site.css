@@ -1,17 +1,21 @@
 ﻿/* Set padding to keep content from hitting the edges */
-.body-content {
-    margin-top: 15px;
-    padding-left: 15px;
-    padding-right: 15px;
-}
 
 /* Set width on the form input elements since they're 100% wide by default */
-input,
-select,
-textarea {
-    max-width: 280px;
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+*{
+    font-family: 'Poppins', sans-serif;
 }
 
+*::selection {
+    background-color: #44b8ff; /* Colore di sfondo della selezione */
+    color: #ffffff; /* Colore del testo della selezione */
+}
+
+/* Per garantire la compatibilità con tutti i browser, includi anche */
+*::-moz-selection {
+    background-color: #ff4444; /* Colore di sfondo della selezione per Firefox */
+    color: #ffffff; /* Colore del testo della selezione per Firefox */
+}
 
 .details-img {
     width: 100%;
@@ -39,7 +43,7 @@ textarea {
     position: relative;
     display: flex;
     flex-direction: column;
-    width: 50% !important;
+    width: 100% !important;
     color: var(--bs-modal-color);
     pointer-events: auto;
     background-color: #fffffff0;
@@ -49,3 +53,113 @@ textarea {
     outline: 0;
     margin-top: 40px
 }
+
+.btn-success, .btn-outline-success {
+    border-radius: 10px;
+    border: 0;
+    background-color: #198754;
+    letter-spacing: 1.5px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: #198754 0px 10px 0px 0px;
+    color: hsl(0, 0%, 100%);
+    cursor: pointer;
+}
+
+    .btn-success, .btn-outline-success:hover {
+        box-shadow: #198754 0px 7px 0px 0px;
+    }
+/* btn-success and btn-outline-success styles already provided by you... */
+
+/* Sovrascrivi btn-danger e btn-outline-danger */
+.btn-danger, .btn-outline-danger {
+    border-radius: 10px;
+    border: 0;
+    background-color: #dc3545; /* Bootstrap's default danger color */
+    letter-spacing: 1.5px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: #dc3545 0px 10px 0px 0px;
+    color: #fff;
+    cursor: pointer;
+}
+
+    .btn-danger:hover, .btn-outline-danger:hover {
+        box-shadow: #dc3545 0px 7px 0px 0px;
+    }
+
+/* Sovrascrivi btn-warning e btn-outline-warning */
+.btn-warning, .btn-outline-warning {
+    border-radius: 10px;
+    border: 0;
+    background-color: #ffc107; /* Bootstrap's default warning color */
+    letter-spacing: 1.5px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: #ffc107 0px 10px 0px 0px;
+    color: #000;
+    cursor: pointer;
+}
+
+    .btn-warning:hover, .btn-outline-warning:hover {
+        box-shadow: #ffc107 0px 7px 0px 0px;
+    }
+
+/* Sovrascrivi btn-primary e btn-outline-primary */
+.btn-primary, .btn-outline-primary {
+    border-radius: 10px;
+    border: 0;
+    background-color: #007bff; /* Bootstrap's default primary color */
+    letter-spacing: 1.5px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: #007bff 0px 10px 0px 0px;
+    color: #fff;
+    cursor: pointer;
+}
+
+    .btn-primary:hover, .btn-outline-primary:hover {
+        box-shadow: #007bff 0px 7px 0px 0px;
+    }
+
+/* Sovrascrivi btn-secondary e btn-outline-secondary */
+.btn-secondary, .btn-outline-secondary {
+    border-radius: 10px;
+    border: 0;
+    background-color: #6c757d; /* Bootstrap's default secondary color */
+    letter-spacing: 1.5px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: #6c757d 0px 10px 0px 0px;
+    color: #fff;
+    cursor: pointer;
+}
+
+    .btn-secondary:hover, .btn-outline-secondary:hover {
+        box-shadow: #6c757d 0px 7px 0px 0px;
+    }
+
+/* Global active state for all .btn classes */
+.btn:active {
+    box-shadow: inherit 0px 0px 0px 0px;
+    transform: translateY(5px);
+    transition: 200ms;
+}
+
+.btn-info, .btn-outline-info {
+    border-radius: 10px;
+    border: 0;
+    background-color: #0DCAF0; /* Bootstrap's default danger color */
+    letter-spacing: 1.5px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: #0DCAF0 0px 10px 0px 0px;
+    color: #fff;
+    cursor: pointer;
+}
+
+    .btn-info:hover, .btn-outline-info:hover {
+        box-shadow: #0DCAF0 0px 7px 0px 0px;
+    }
+
+

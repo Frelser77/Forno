@@ -568,14 +568,14 @@ namespace Forno.Controllers
             var orderDetail = db.OrderDetail.Find(orderDetailId);
             if (orderDetail == null)
             {
-                return Json(new { success = false, message = "Dettaglio dell'ordine non trovato." });
+                return RedirectToAction("Index", "Error");
             }
 
             db.OrderDetail.Remove(orderDetail);
             db.SaveChanges();
 
             var cartItemCount = GetOrCreateCart().OrderDetail.Sum(item => item.Quantity);
-            return Json(new { success = true, cartItemCount });
+            return RedirectToAction("GetCart");
         }
 
         // Metodo per mostrare la conferma dell'ordine
